@@ -15,7 +15,7 @@ pub struct ColorSprite {
 }
 
 impl ColorSprite {
-    pub fn new_polygon(vertices: &[ColorVertex], indices: &[u16]) -> Self {
+    #[must_use] pub fn new_polygon(vertices: &[ColorVertex], indices: &[u16]) -> Self {
         Self {
             vertex_buffer: RendererGlobals::get().device.create_buffer_init(
                 &BufferInitDescriptor {
@@ -35,7 +35,7 @@ impl ColorSprite {
         }
     }
 
-    pub fn new_quad(color: wgpu::Color) -> Self {
+    #[must_use] pub fn new_quad(color: wgpu::Color) -> Self {
         let color = [color.r, color.g, color.b, color.a].map(|x| x as f32);
 
         Self::new_polygon(
@@ -142,7 +142,7 @@ pub struct TextureSprite {
 }
 
 impl TextureSprite {
-    pub fn new_polygon(
+    #[must_use] pub fn new_polygon(
         vertices: &[TextureVertex],
         indices: &[u16],
         texture: &wgpu::TextureView,
@@ -183,7 +183,7 @@ impl TextureSprite {
         }
     }
 
-    pub fn new_quad(texture: &wgpu::TextureView, sampler: &wgpu::Sampler) -> Self {
+    #[must_use] pub fn new_quad(texture: &wgpu::TextureView, sampler: &wgpu::Sampler) -> Self {
         Self::new_polygon(
             &[
                 TextureVertex {

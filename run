@@ -3,3 +3,6 @@ cargo run --example template
 
 [default:build]
 cargo build
+
+[fix]
+cargo clippy --fix --allow-dirty -- -W clippy::pedantic

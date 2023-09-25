@@ -5,7 +5,7 @@ use wgpu::util::DeviceExt;
 
 use crate::renderer::RendererGlobals;
 
-pub fn texture_from_image(image: RgbaImage) -> Result<wgpu::TextureView, ImageError> {
+pub fn from_image(image: &RgbaImage) -> Result<wgpu::TextureView, ImageError> {
     let texture = RendererGlobals::get().device.create_texture_with_data(
         &RendererGlobals::get().queue,
         &wgpu::TextureDescriptor {
@@ -28,14 +28,15 @@ pub fn texture_from_image(image: RgbaImage) -> Result<wgpu::TextureView, ImageEr
     Ok(texture.create_view(&wgpu::TextureViewDescriptor::default()))
 }
 
-pub fn texture_from_memory(data: &[u8]) -> Result<wgpu::TextureView, ImageError> {
-    texture_from_image(image::load_from_memory(data)?.into_rgba8())
+pub fn from_memory(data: &[u8]) -> Result<wgpu::TextureView, ImageError> {
+    from_image(&image::load_from_memory(data)?.into_rgba8())
 }
 
-pub fn texture_from_path<P: AsRef<Path>>(path: P) -> Result<wgpu::TextureView, ImageError> {
-    texture_from_image(image::open(path)?.into_rgba8())
+pub fn from_path<P: AsRef<Path>>(path: P) -> Result<wgpu::TextureView, ImageError> {
+    from_image(&image::open(path)?.into_rgba8())
 }
 
+#[must_use]
 pub fn linear_sampler() -> wgpu::Sampler {
     RendererGlobals::get()
         .device
@@ -45,6 +46,7 @@ pub fn linear_sampler() -> wgpu::Sampler {
         })
 }
 
+#[must_use]
 pub fn nearest_sampler() -> wgpu::Sampler {
     RendererGlobals::get()
         .device
