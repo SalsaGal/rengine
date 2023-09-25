@@ -30,7 +30,7 @@ pub struct Renderer {
 
     pub window: Window,
 
-    projection: Dirty<Projection>,
+    pub projection: Dirty<Projection>,
     projection_buffer: wgpu::Buffer,
     projection_bind_group: wgpu::BindGroup,
     color_pipeline: wgpu::RenderPipeline,
@@ -146,7 +146,20 @@ impl Renderer {
             .configure(&RendererGlobals::get().device, &self.config);
     }
 
-    pub(crate) fn render(&self) -> Result<(), wgpu::SurfaceError> {
+    pub(crate) fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
+        if self.projection.dirty {
+            // Can't use `Dirty::clean` because it requires weird mutability issues
+            RendererGlobals::get().queue.write_buffer(
+                &self.projection_buffer,
+                0,
+                bytemuck::cast_slice(&[Self::projection_to_mat4(
+                    *self.projection,
+                    self.window.inner_size(),
+                )]),
+            );
+            self.projection.dirty = false;
+        }
+
         let current = self.surface.get_current_texture()?;
         let view = current
             .texture

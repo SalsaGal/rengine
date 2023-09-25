@@ -1,4 +1,5 @@
 use rengine::{
+    renderer::Projection,
     sprite::{ColorSprite, TextureSprite},
     Game,
 };
@@ -14,6 +15,8 @@ impl Game for Main {
         // data.renderer
         //     .color_sprites
         //     .push(ColorSprite::new_quad(wgpu::Color::WHITE));
+
+        *data.renderer.projection = Projection::FixedHeight(1.0);
 
         data.renderer
             .texture_sprites
