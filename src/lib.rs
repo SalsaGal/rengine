@@ -1,9 +1,8 @@
 mod renderer;
 mod sprite;
 
-use glam::vec3;
 use renderer::Renderer;
-use sprite::{ColorSprite, ColorVertex};
+use sprite::ColorSprite;
 use winit::{
     event::{Event, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
@@ -15,20 +14,7 @@ pub fn run(mut game: impl Game + 'static) -> ! {
     let window = WindowBuilder::new().build(&event_loop).unwrap();
 
     let mut renderer = pollster::block_on(Renderer::new(window));
-    renderer.color_sprites.push(ColorSprite::new_polygon(
-        &[
-            ColorVertex {
-                pos: vec3(0.0, 0.0, 0.0),
-            },
-            ColorVertex {
-                pos: vec3(1.0, 0.0, 0.0),
-            },
-            ColorVertex {
-                pos: vec3(1.0, 1.0, 0.0),
-            },
-        ],
-        &[0, 1, 2],
-    ));
+    renderer.color_sprites.push(ColorSprite::new_quad());
 
     event_loop.run(move |event, _, control_flow| match event {
         Event::MainEventsCleared => {

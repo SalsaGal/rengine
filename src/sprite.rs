@@ -1,6 +1,6 @@
 use std::mem::size_of;
 
-use glam::Vec3;
+use glam::{vec3, Vec3};
 use wgpu::{
     include_wgsl,
     util::{BufferInitDescriptor, DeviceExt},
@@ -33,6 +33,26 @@ impl ColorSprite {
                 }),
             index_count: indices.len() as u32,
         }
+    }
+
+    pub fn new_quad() -> Self {
+        Self::new_polygon(
+            &[
+                ColorVertex {
+                    pos: vec3(-0.5, -0.5, 0.0),
+                },
+                ColorVertex {
+                    pos: vec3(0.5, -0.5, 0.0),
+                },
+                ColorVertex {
+                    pos: vec3(0.5, 0.5, 0.0),
+                },
+                ColorVertex {
+                    pos: vec3(-0.5, 0.5, 0.0),
+                },
+            ],
+            &[0, 1, 2, 0, 2, 3],
+        )
     }
 
     pub(crate) fn pipeline() -> wgpu::RenderPipeline {
