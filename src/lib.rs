@@ -18,6 +18,12 @@ pub fn run(mut game: impl Game + 'static) -> ! {
             game.update();
             renderer.window.request_redraw();
         }
+        Event::RedrawRequested(..) => match renderer.render() {
+            Err(wgpu::SurfaceError::Lost) => renderer.resize(renderer.window.inner_size()),
+            Err(wgpu::SurfaceError::OutOfMemory) => panic!("SurfaceError: Out Of Memory!"),
+            Err(e) => eprintln!("SurfaceError: {e}"),
+            Ok(_) => {}
+        },
         Event::WindowEvent { event, .. } => match event {
             WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
             WindowEvent::Resized(size) => renderer.resize(size),
