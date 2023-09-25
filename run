@@ -1,0 +1,5 @@
+[default]
+cargo run --example template
+
+[default:build]
+cargo build
