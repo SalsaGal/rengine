@@ -35,24 +35,26 @@ impl ColorSprite {
         }
     }
 
-    pub fn new_quad() -> Self {
+    pub fn new_quad(color: wgpu::Color) -> Self {
+        let color = [color.r, color.g, color.b, color.a].map(|x| x as f32);
+
         Self::new_polygon(
             &[
                 ColorVertex {
                     pos: vec3(-0.5, -0.5, 0.0),
-                    color: [1.0, 0.0, 0.0, 1.0],
+                    color,
                 },
                 ColorVertex {
                     pos: vec3(0.5, -0.5, 0.0),
-                    color: [1.0, 0.0, 1.0, 1.0],
+                    color,
                 },
                 ColorVertex {
                     pos: vec3(0.5, 0.5, 0.0),
-                    color: [1.0, 1.0, 0.0, 1.0],
+                    color,
                 },
                 ColorVertex {
                     pos: vec3(-0.5, 0.5, 0.0),
-                    color: [0.0, 1.0, 1.0, 1.0],
+                    color,
                 },
             ],
             &[0, 1, 2, 0, 2, 3],
