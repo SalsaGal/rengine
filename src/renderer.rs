@@ -1,6 +1,11 @@
 use std::sync::OnceLock;
 
-use wgpu::{Device, Queue, Surface, SurfaceConfiguration};
+use dirtytype::Dirty;
+use glam::{vec2, Mat4};
+use wgpu::{
+    util::{BufferInitDescriptor, DeviceExt},
+    Device, Queue, Surface, SurfaceConfiguration,
+};
 use winit::{dpi::PhysicalSize, window::Window};
 
 use crate::sprite::ColorSprite;
@@ -25,12 +30,15 @@ pub struct Renderer {
 
     pub window: Window,
 
+    projection: Dirty<Projection>,
+    projection_buffer: wgpu::Buffer,
+    projection_bind_group: wgpu::BindGroup,
     color_pipeline: wgpu::RenderPipeline,
     pub color_sprites: Vec<ColorSprite>,
 }
 
 impl Renderer {
-    pub(crate) async fn new(window: Window) -> Self {
+    pub(crate) async fn new(window: Window, projection: Projection) -> Self {
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
             backends: wgpu::Backends::PRIMARY,
             dx12_shader_compiler: wgpu::Dx12Compiler::Fxc,
@@ -65,13 +73,56 @@ impl Renderer {
 
         GLOBALS.set(RendererGlobals { device, queue }).unwrap();
 
+        let projection_buffer =
+            RendererGlobals::get()
+                .device
+                .create_buffer_init(&BufferInitDescriptor {
+                    label: None,
+                    contents: bytemuck::cast_slice(&[Self::projection_to_mat4(
+                        projection,
+                        window.inner_size(),
+                    )]),
+                    usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::UNIFORM,
+                });
+        let projection_bind_group_layout = RendererGlobals::get().device.create_bind_group_layout(
+            &wgpu::BindGroupLayoutDescriptor {
+                label: None,
+                entries: &[wgpu::BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: wgpu::ShaderStages::VERTEX,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                }],
+            },
+        );
+        let projection_bind_group =
+            RendererGlobals::get()
+                .device
+                .create_bind_group(&wgpu::BindGroupDescriptor {
+                    label: Some("projection"),
+                    layout: &projection_bind_group_layout,
+                    entries: &[wgpu::BindGroupEntry {
+                        binding: 0,
+                        resource: wgpu::BindingResource::Buffer(
+                            projection_buffer.as_entire_buffer_binding(),
+                        ),
+                    }],
+                });
+
         Self {
             surface,
             config,
 
             window,
 
-            color_pipeline: ColorSprite::pipeline(),
+            projection: Dirty::new(projection),
+            projection_buffer,
+            projection_bind_group,
+            color_pipeline: ColorSprite::pipeline(&projection_bind_group_layout),
             color_sprites: vec![],
         }
     }
@@ -79,6 +130,14 @@ impl Renderer {
     pub(crate) fn resize(&mut self, size: PhysicalSize<u32>) {
         self.config.width = size.width;
         self.config.height = size.height;
+        RendererGlobals::get().queue.write_buffer(
+            &self.projection_buffer,
+            0,
+            bytemuck::cast_slice(&[Self::projection_to_mat4(
+                *self.projection,
+                self.window.inner_size(),
+            )]),
+        );
         self.surface
             .configure(&RendererGlobals::get().device, &self.config);
     }
@@ -111,6 +170,7 @@ impl Renderer {
                 render_pass.set_vertex_buffer(0, model.vertex_buffer.slice(..));
                 render_pass
                     .set_index_buffer(model.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
+                render_pass.set_bind_group(0, &self.projection_bind_group, &[]);
                 render_pass.draw_indexed(0..model.index_count, 0, 0..1);
             }
         }
@@ -121,5 +181,50 @@ impl Renderer {
         current.present();
 
         Ok(())
+    }
+
+    fn projection_to_mat4(projection: Projection, size: PhysicalSize<u32>) -> Mat4 {
+        let size = vec2(size.width as f32, size.height as f32);
+        match projection {
+            Projection::Absolute(width, height) => Mat4::orthographic_rh(
+                -width / 2.0,
+                width / 2.0,
+                -height / 2.0,
+                height / 2.0,
+                -10.0,
+                10.0,
+            ),
+            Projection::FixedWidth(width) => Mat4::orthographic_rh(
+                -width / 2.0,
+                width / 2.0,
+                -width * (size.y / size.x) / 2.0,
+                width * (size.y / size.x) / 2.0,
+                -10.0,
+                10.0,
+            ),
+            Projection::FixedHeight(height) => Mat4::orthographic_rh(
+                -height * (size.x / size.y) / 2.0,
+                height * (size.x / size.y) / 2.0,
+                -height / 2.0,
+                height / 2.0,
+                -10.0,
+                10.0,
+            ),
+            _ => todo!(),
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum Projection {
+    Absolute(f32, f32),
+    FixedWidth(f32),
+    FixedHeight(f32),
+    FixedMinimum(f32, f32),
+}
+
+impl Default for Projection {
+    fn default() -> Self {
+        Self::Absolute(2.0, 2.0)
     }
 }

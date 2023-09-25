@@ -55,12 +55,12 @@ impl ColorSprite {
         )
     }
 
-    pub(crate) fn pipeline() -> wgpu::RenderPipeline {
+    pub(crate) fn pipeline(projection_layout: &wgpu::BindGroupLayout) -> wgpu::RenderPipeline {
         let device = &RendererGlobals::get().device;
         let shader = device.create_shader_module(include_wgsl!("color.wgsl"));
         let layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: None,
-            bind_group_layouts: &[],
+            bind_group_layouts: &[projection_layout],
             push_constant_ranges: &[],
         });
         device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {

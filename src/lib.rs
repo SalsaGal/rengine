@@ -13,7 +13,8 @@ pub fn run(mut game: impl Game + 'static) -> ! {
     let event_loop = EventLoop::new();
     let window = WindowBuilder::new().build(&event_loop).unwrap();
 
-    let mut renderer = pollster::block_on(Renderer::new(window));
+    let mut renderer =
+        pollster::block_on(Renderer::new(window, renderer::Projection::FixedWidth(2.0)));
     renderer.color_sprites.push(ColorSprite::new_quad());
 
     event_loop.run(move |event, _, control_flow| match event {
