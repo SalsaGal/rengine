@@ -3,6 +3,8 @@ use std::sync::OnceLock;
 use wgpu::{Device, Queue, Surface, SurfaceConfiguration};
 use winit::{dpi::PhysicalSize, window::Window};
 
+use crate::sprite::ColorSprite;
+
 #[derive(Debug)]
 pub struct RendererGlobals {
     pub(crate) device: Device,
@@ -22,6 +24,9 @@ pub struct Renderer {
     config: SurfaceConfiguration,
 
     pub window: Window,
+
+    color_pipeline: wgpu::RenderPipeline,
+    pub color_sprites: Vec<ColorSprite>,
 }
 
 impl Renderer {
@@ -63,7 +68,11 @@ impl Renderer {
         Self {
             surface,
             config,
+
             window,
+
+            color_pipeline: ColorSprite::pipeline(),
+            color_sprites: vec![],
         }
     }
 
@@ -84,7 +93,7 @@ impl Renderer {
             .create_command_encoder(&wgpu::CommandEncoderDescriptor::default());
 
         {
-            let _render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+            let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("color pass"),
                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                     view: &view,
@@ -96,6 +105,14 @@ impl Renderer {
                 })],
                 depth_stencil_attachment: None,
             });
+
+            render_pass.set_pipeline(&self.color_pipeline);
+            for model in &self.color_sprites {
+                render_pass.set_vertex_buffer(0, model.vertex_buffer.slice(..));
+                render_pass
+                    .set_index_buffer(model.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
+                render_pass.draw_indexed(0..model.index_count, 0, 0..1);
+            }
         }
 
         RendererGlobals::get()
