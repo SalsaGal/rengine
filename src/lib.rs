@@ -1,8 +1,7 @@
-mod renderer;
-mod sprite;
+pub mod renderer;
+pub mod sprite;
 
 use renderer::Renderer;
-use sprite::ColorSprite;
 use winit::{
     event::{Event, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
@@ -15,11 +14,16 @@ pub fn run(mut game: impl Game + 'static) -> ! {
 
     let mut renderer =
         pollster::block_on(Renderer::new(window, renderer::Projection::FixedWidth(2.0)));
-    renderer.color_sprites.push(ColorSprite::new_quad());
+
+    game.init(GameData {
+        renderer: &mut renderer,
+    });
 
     event_loop.run(move |event, _, control_flow| match event {
         Event::MainEventsCleared => {
-            game.update();
+            game.update(GameData {
+                renderer: &mut renderer,
+            });
             renderer.window.request_redraw();
         }
         Event::RedrawRequested(..) => match renderer.render() {
@@ -40,6 +44,11 @@ pub fn run(mut game: impl Game + 'static) -> ! {
     })
 }
 
+pub struct GameData<'a> {
+    pub renderer: &'a mut Renderer,
+}
+
 pub trait Game {
-    fn update(&mut self) {}
+    fn init(&mut self, data: GameData) {}
+    fn update(&mut self, data: GameData) {}
 }
