@@ -8,7 +8,7 @@ use wgpu::{
 };
 use winit::{dpi::PhysicalSize, window::Window};
 
-use crate::sprite::ColorSprite;
+use crate::sprite::{ColorSprite, TextureSprite};
 
 #[derive(Debug)]
 pub struct RendererGlobals {
@@ -35,6 +35,8 @@ pub struct Renderer {
     projection_bind_group: wgpu::BindGroup,
     color_pipeline: wgpu::RenderPipeline,
     pub color_sprites: Vec<ColorSprite>,
+    texture_pipeline: wgpu::RenderPipeline,
+    pub texture_sprites: Vec<TextureSprite>,
 }
 
 impl Renderer {
@@ -124,6 +126,8 @@ impl Renderer {
             projection_bind_group,
             color_pipeline: ColorSprite::pipeline(&projection_bind_group_layout),
             color_sprites: vec![],
+            texture_pipeline: TextureSprite::pipeline(&projection_bind_group_layout),
+            texture_sprites: vec![],
         }
     }
 
@@ -167,6 +171,14 @@ impl Renderer {
 
             render_pass.set_pipeline(&self.color_pipeline);
             for model in &self.color_sprites {
+                render_pass.set_vertex_buffer(0, model.vertex_buffer.slice(..));
+                render_pass
+                    .set_index_buffer(model.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
+                render_pass.set_bind_group(0, &self.projection_bind_group, &[]);
+                render_pass.draw_indexed(0..model.index_count, 0, 0..1);
+            }
+            render_pass.set_pipeline(&self.texture_pipeline);
+            for model in &self.texture_sprites {
                 render_pass.set_vertex_buffer(0, model.vertex_buffer.slice(..));
                 render_pass
                     .set_index_buffer(model.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
