@@ -48,6 +48,7 @@ pub struct GameData<'a> {
     pub renderer: &'a mut Renderer,
 }
 
+#[allow(unused)]
 pub trait Game {
     fn init(&mut self, data: GameData) {}
     fn update(&mut self, data: GameData) {}

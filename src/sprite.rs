@@ -40,15 +40,19 @@ impl ColorSprite {
             &[
                 ColorVertex {
                     pos: vec3(-0.5, -0.5, 0.0),
+                    color: [1.0, 0.0, 0.0, 1.0],
                 },
                 ColorVertex {
                     pos: vec3(0.5, -0.5, 0.0),
+                    color: [1.0, 0.0, 1.0, 1.0],
                 },
                 ColorVertex {
                     pos: vec3(0.5, 0.5, 0.0),
+                    color: [1.0, 1.0, 0.0, 1.0],
                 },
                 ColorVertex {
                     pos: vec3(-0.5, 0.5, 0.0),
+                    color: [0.0, 1.0, 1.0, 1.0],
                 },
             ],
             &[0, 1, 2, 0, 2, 3],
@@ -104,6 +108,7 @@ impl ColorSprite {
 #[derive(Clone, Copy, Debug, Default, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct ColorVertex {
     pub pos: Vec3,
+    pub color: [f32; 4],
 }
 
 impl ColorVertex {
@@ -111,11 +116,18 @@ impl ColorVertex {
         wgpu::VertexBufferLayout {
             array_stride: size_of::<Self>() as u64,
             step_mode: wgpu::VertexStepMode::Vertex,
-            attributes: &[wgpu::VertexAttribute {
-                format: wgpu::VertexFormat::Float32x3,
-                offset: 0,
-                shader_location: 0,
-            }],
+            attributes: &[
+                wgpu::VertexAttribute {
+                    format: wgpu::VertexFormat::Float32x3,
+                    offset: 0,
+                    shader_location: 0,
+                },
+                wgpu::VertexAttribute {
+                    format: wgpu::VertexFormat::Float32x4,
+                    offset: size_of::<Vec3>() as u64,
+                    shader_location: 1,
+                },
+            ],
         }
     }
 }
