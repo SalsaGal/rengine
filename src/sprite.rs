@@ -138,10 +138,16 @@ pub struct TextureSprite {
     pub(crate) vertex_buffer: wgpu::Buffer,
     pub(crate) index_buffer: wgpu::Buffer,
     pub(crate) index_count: u32,
+    pub(crate) texture_bind_group: wgpu::BindGroup,
 }
 
 impl TextureSprite {
-    pub fn new_polygon(vertices: &[TextureVertex], indices: &[u16]) -> Self {
+    pub fn new_polygon(
+        vertices: &[TextureVertex],
+        indices: &[u16],
+        texture: &wgpu::TextureView,
+        sampler: &wgpu::Sampler,
+    ) -> Self {
         Self {
             vertex_buffer: RendererGlobals::get().device.create_buffer_init(
                 &BufferInitDescriptor {
@@ -158,10 +164,26 @@ impl TextureSprite {
                     usage: wgpu::BufferUsages::INDEX,
                 }),
             index_count: indices.len() as u32,
+            texture_bind_group: RendererGlobals::get().device.create_bind_group(
+                &wgpu::BindGroupDescriptor {
+                    label: None,
+                    layout: &Self::texture_bind_group_layout(),
+                    entries: &[
+                        wgpu::BindGroupEntry {
+                            binding: 0,
+                            resource: wgpu::BindingResource::TextureView(texture),
+                        },
+                        wgpu::BindGroupEntry {
+                            binding: 1,
+                            resource: wgpu::BindingResource::Sampler(sampler),
+                        },
+                    ],
+                },
+            ),
         }
     }
 
-    pub fn new_quad() -> Self {
+    pub fn new_quad(texture: &wgpu::TextureView, sampler: &wgpu::Sampler) -> Self {
         Self::new_polygon(
             &[
                 TextureVertex {
@@ -182,6 +204,8 @@ impl TextureSprite {
                 },
             ],
             &[0, 1, 2, 0, 2, 3],
+            texture,
+            sampler,
         )
     }
 
@@ -190,7 +214,7 @@ impl TextureSprite {
         let shader = device.create_shader_module(include_wgsl!("color.wgsl"));
         let layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: None,
-            bind_group_layouts: &[projection_layout],
+            bind_group_layouts: &[projection_layout, &Self::texture_bind_group_layout()],
             push_constant_ranges: &[],
         });
         device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
@@ -227,6 +251,32 @@ impl TextureSprite {
             }),
             multiview: None,
         })
+    }
+
+    fn texture_bind_group_layout() -> wgpu::BindGroupLayout {
+        RendererGlobals::get()
+            .device
+            .create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+                label: None,
+                entries: &[
+                    wgpu::BindGroupLayoutEntry {
+                        binding: 0,
+                        visibility: wgpu::ShaderStages::FRAGMENT,
+                        ty: wgpu::BindingType::Texture {
+                            sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                            view_dimension: wgpu::TextureViewDimension::D2,
+                            multisampled: false,
+                        },
+                        count: None,
+                    },
+                    wgpu::BindGroupLayoutEntry {
+                        binding: 1,
+                        visibility: wgpu::ShaderStages::FRAGMENT,
+                        ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
+                        count: None,
+                    },
+                ],
+            })
     }
 }
 

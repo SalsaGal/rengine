@@ -183,11 +183,11 @@ impl Renderer {
             });
 
             render_pass.set_pipeline(&self.color_pipeline);
+            render_pass.set_bind_group(0, &self.projection_bind_group, &[]);
             for model in &self.color_sprites {
                 render_pass.set_vertex_buffer(0, model.vertex_buffer.slice(..));
                 render_pass
                     .set_index_buffer(model.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
-                render_pass.set_bind_group(0, &self.projection_bind_group, &[]);
                 render_pass.draw_indexed(0..model.index_count, 0, 0..1);
             }
             render_pass.set_pipeline(&self.texture_pipeline);
@@ -195,7 +195,7 @@ impl Renderer {
                 render_pass.set_vertex_buffer(0, model.vertex_buffer.slice(..));
                 render_pass
                     .set_index_buffer(model.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
-                render_pass.set_bind_group(0, &self.projection_bind_group, &[]);
+                render_pass.set_bind_group(1, &model.texture_bind_group, &[]);
                 render_pass.draw_indexed(0..model.index_count, 0, 0..1);
             }
         }

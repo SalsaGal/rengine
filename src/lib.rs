@@ -1,5 +1,6 @@
 pub mod renderer;
 pub mod sprite;
+pub mod texture;
 
 use renderer::Renderer;
 use winit::{

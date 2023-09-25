@@ -1,8 +1,4 @@
-use rengine::{
-    renderer::Projection,
-    sprite::{ColorSprite, TextureSprite},
-    Game,
-};
+use rengine::{renderer::Projection, sprite::TextureSprite, texture, Game};
 
 fn main() {
     rengine::run(Main);
@@ -18,8 +14,9 @@ impl Game for Main {
 
         *data.renderer.projection = Projection::FixedHeight(1.0);
 
-        data.renderer
-            .texture_sprites
-            .push(TextureSprite::new_quad());
+        data.renderer.texture_sprites.push(TextureSprite::new_quad(
+            &texture::texture_from_memory(include_bytes!("test.png")).unwrap(),
+            &texture::linear_sampler(),
+        ));
     }
 }

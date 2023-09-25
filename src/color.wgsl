@@ -1,6 +1,11 @@
 @group(0)@binding(0)
 var<uniform> projection: mat4x4<f32>;
 
+@group(1)@binding(0)
+var texture: texture_2d<f32>;
+@group(1)@binding(1)
+var texture_sampler: sampler;
+
 struct ColorInput {
     @location(0) pos: vec3<f32>,
     @location(1) color: vec4<f32>,
@@ -44,5 +49,5 @@ fn texture_vertex(input: TextureInput) -> TextureOutput {
 
 @fragment
 fn texture_fragment(output: TextureOutput) -> @location(0) vec4<f32> {
-    return vec4<f32>(output.tex_coords, 0.0, 1.0);
+    return textureSample(texture, texture_sampler, output.tex_coords);
 }
