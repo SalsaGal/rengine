@@ -22,7 +22,7 @@ pub fn from_image(image: &RgbaImage) -> Result<wgpu::TextureView, ImageError> {
             usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
             view_formats: &[],
         },
-        &image,
+        image,
     );
 
     Ok(texture.create_view(&wgpu::TextureViewDescriptor::default()))

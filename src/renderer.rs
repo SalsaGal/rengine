@@ -8,7 +8,7 @@ use wgpu::{
 };
 use winit::{dpi::PhysicalSize, window::Window};
 
-use crate::sprite::{ColorSprite, TextureSprite};
+use crate::sprite::{Sprite, SpriteType};
 
 #[derive(Debug)]
 pub struct RendererGlobals {
@@ -33,10 +33,9 @@ pub struct Renderer {
     pub projection: Dirty<Projection>,
     projection_buffer: wgpu::Buffer,
     projection_bind_group: wgpu::BindGroup,
+    pub sprites: Vec<Sprite>,
     color_pipeline: wgpu::RenderPipeline,
-    pub color_sprites: Vec<ColorSprite>,
     texture_pipeline: wgpu::RenderPipeline,
-    pub texture_sprites: Vec<TextureSprite>,
 }
 
 impl Renderer {
@@ -124,10 +123,9 @@ impl Renderer {
             projection: Dirty::new(projection),
             projection_buffer,
             projection_bind_group,
-            color_pipeline: ColorSprite::pipeline(&projection_bind_group_layout),
-            color_sprites: vec![],
-            texture_pipeline: TextureSprite::pipeline(&projection_bind_group_layout),
-            texture_sprites: vec![],
+            color_pipeline: Sprite::color_pipeline(&projection_bind_group_layout),
+            texture_pipeline: Sprite::texture_pipeline(&projection_bind_group_layout),
+            sprites: vec![],
         }
     }
 
@@ -182,20 +180,18 @@ impl Renderer {
                 depth_stencil_attachment: None,
             });
 
-            render_pass.set_pipeline(&self.color_pipeline);
             render_pass.set_bind_group(0, &self.projection_bind_group, &[]);
-            for model in &self.color_sprites {
+            for model in &self.sprites {
+                match &model.ty {
+                    SpriteType::Color => render_pass.set_pipeline(&self.color_pipeline),
+                    SpriteType::Texture(texture) => {
+                        render_pass.set_pipeline(&self.texture_pipeline);
+                        render_pass.set_bind_group(1, texture, &[]);
+                    }
+                }
                 render_pass.set_vertex_buffer(0, model.vertex_buffer.slice(..));
                 render_pass
                     .set_index_buffer(model.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
-                render_pass.draw_indexed(0..model.index_count, 0, 0..1);
-            }
-            render_pass.set_pipeline(&self.texture_pipeline);
-            for model in &self.texture_sprites {
-                render_pass.set_vertex_buffer(0, model.vertex_buffer.slice(..));
-                render_pass
-                    .set_index_buffer(model.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
-                render_pass.set_bind_group(1, &model.texture_bind_group, &[]);
                 render_pass.draw_indexed(0..model.index_count, 0, 0..1);
             }
         }

@@ -8,14 +8,27 @@ use wgpu::{
 
 use crate::renderer::RendererGlobals;
 
-pub struct ColorSprite {
+pub enum SpriteType {
+    Color,
+    Texture(wgpu::BindGroup),
+}
+
+pub trait Vertex: bytemuck::Pod + bytemuck::Zeroable {}
+
+pub struct Sprite {
     pub(crate) vertex_buffer: wgpu::Buffer,
     pub(crate) index_buffer: wgpu::Buffer,
     pub(crate) index_count: u32,
+    pub(crate) ty: SpriteType,
 }
 
-impl ColorSprite {
-    #[must_use] pub fn new_polygon(vertices: &[ColorVertex], indices: &[u16]) -> Self {
+impl Sprite {
+    #[must_use]
+    pub fn new_polygon(
+        vertices: &[impl Vertex],
+        indices: &[u16],
+        texture: Option<(&wgpu::TextureView, &wgpu::Sampler)>,
+    ) -> Self {
         Self {
             vertex_buffer: RendererGlobals::get().device.create_buffer_init(
                 &BufferInitDescriptor {
@@ -32,10 +45,32 @@ impl ColorSprite {
                     usage: wgpu::BufferUsages::INDEX,
                 }),
             index_count: indices.len() as u32,
+            ty: match texture {
+                Some((view, sampler)) => {
+                    SpriteType::Texture(RendererGlobals::get().device.create_bind_group(
+                        &wgpu::BindGroupDescriptor {
+                            label: None,
+                            layout: &Self::texture_bind_group_layout(),
+                            entries: &[
+                                wgpu::BindGroupEntry {
+                                    binding: 0,
+                                    resource: wgpu::BindingResource::TextureView(view),
+                                },
+                                wgpu::BindGroupEntry {
+                                    binding: 1,
+                                    resource: wgpu::BindingResource::Sampler(sampler),
+                                },
+                            ],
+                        },
+                    ))
+                }
+                None => SpriteType::Color,
+            },
         }
     }
 
-    #[must_use] pub fn new_quad(color: wgpu::Color) -> Self {
+    #[must_use]
+    pub fn new_quad_color(color: wgpu::Color) -> Self {
         let color = [color.r, color.g, color.b, color.a].map(|x| x as f32);
 
         Self::new_polygon(
@@ -58,10 +93,39 @@ impl ColorSprite {
                 },
             ],
             &[0, 1, 2, 0, 2, 3],
+            None,
         )
     }
 
-    pub(crate) fn pipeline(projection_layout: &wgpu::BindGroupLayout) -> wgpu::RenderPipeline {
+    #[must_use]
+    pub fn new_quad_texture(view: &wgpu::TextureView, sampler: &wgpu::Sampler) -> Self {
+        Self::new_polygon(
+            &[
+                TextureVertex {
+                    pos: vec3(-0.5, -0.5, 0.0),
+                    tex_coords: vec2(0.0, 1.0),
+                },
+                TextureVertex {
+                    pos: vec3(0.5, -0.5, 0.0),
+                    tex_coords: vec2(1.0, 1.0),
+                },
+                TextureVertex {
+                    pos: vec3(0.5, 0.5, 0.0),
+                    tex_coords: vec2(1.0, 0.0),
+                },
+                TextureVertex {
+                    pos: vec3(-0.5, 0.5, 0.0),
+                    tex_coords: vec2(0.0, 0.0),
+                },
+            ],
+            &[0, 1, 2, 0, 2, 3],
+            Some((view, sampler)),
+        )
+    }
+
+    pub(crate) fn color_pipeline(
+        projection_layout: &wgpu::BindGroupLayout,
+    ) -> wgpu::RenderPipeline {
         let device = &RendererGlobals::get().device;
         let shader = device.create_shader_module(include_wgsl!("color.wgsl"));
         let layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
@@ -104,112 +168,9 @@ impl ColorSprite {
             multiview: None,
         })
     }
-}
-
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Default, bytemuck::Pod, bytemuck::Zeroable)]
-pub struct ColorVertex {
-    pub pos: Vec3,
-    pub color: [f32; 4],
-}
-
-impl ColorVertex {
-    pub(crate) fn desc<'a>() -> wgpu::VertexBufferLayout<'a> {
-        wgpu::VertexBufferLayout {
-            array_stride: size_of::<Self>() as u64,
-            step_mode: wgpu::VertexStepMode::Vertex,
-            attributes: &[
-                wgpu::VertexAttribute {
-                    format: wgpu::VertexFormat::Float32x3,
-                    offset: 0,
-                    shader_location: 0,
-                },
-                wgpu::VertexAttribute {
-                    format: wgpu::VertexFormat::Float32x4,
-                    offset: size_of::<Vec3>() as u64,
-                    shader_location: 1,
-                },
-            ],
-        }
-    }
-}
-
-pub struct TextureSprite {
-    pub(crate) vertex_buffer: wgpu::Buffer,
-    pub(crate) index_buffer: wgpu::Buffer,
-    pub(crate) index_count: u32,
-    pub(crate) texture_bind_group: wgpu::BindGroup,
-}
-
-impl TextureSprite {
-    #[must_use] pub fn new_polygon(
-        vertices: &[TextureVertex],
-        indices: &[u16],
-        texture: &wgpu::TextureView,
-        sampler: &wgpu::Sampler,
-    ) -> Self {
-        Self {
-            vertex_buffer: RendererGlobals::get().device.create_buffer_init(
-                &BufferInitDescriptor {
-                    label: None,
-                    contents: bytemuck::cast_slice(vertices),
-                    usage: wgpu::BufferUsages::VERTEX,
-                },
-            ),
-            index_buffer: RendererGlobals::get()
-                .device
-                .create_buffer_init(&BufferInitDescriptor {
-                    label: None,
-                    contents: bytemuck::cast_slice(indices),
-                    usage: wgpu::BufferUsages::INDEX,
-                }),
-            index_count: indices.len() as u32,
-            texture_bind_group: RendererGlobals::get().device.create_bind_group(
-                &wgpu::BindGroupDescriptor {
-                    label: None,
-                    layout: &Self::texture_bind_group_layout(),
-                    entries: &[
-                        wgpu::BindGroupEntry {
-                            binding: 0,
-                            resource: wgpu::BindingResource::TextureView(texture),
-                        },
-                        wgpu::BindGroupEntry {
-                            binding: 1,
-                            resource: wgpu::BindingResource::Sampler(sampler),
-                        },
-                    ],
-                },
-            ),
-        }
-    }
-
-    #[must_use] pub fn new_quad(texture: &wgpu::TextureView, sampler: &wgpu::Sampler) -> Self {
-        Self::new_polygon(
-            &[
-                TextureVertex {
-                    pos: vec3(-0.5, -0.5, 0.0),
-                    tex_coords: vec2(0.0, 1.0),
-                },
-                TextureVertex {
-                    pos: vec3(0.5, -0.5, 0.0),
-                    tex_coords: vec2(1.0, 1.0),
-                },
-                TextureVertex {
-                    pos: vec3(0.5, 0.5, 0.0),
-                    tex_coords: vec2(1.0, 0.0),
-                },
-                TextureVertex {
-                    pos: vec3(-0.5, 0.5, 0.0),
-                    tex_coords: vec2(0.0, 0.0),
-                },
-            ],
-            &[0, 1, 2, 0, 2, 3],
-            texture,
-            sampler,
-        )
-    }
-
-    pub(crate) fn pipeline(projection_layout: &wgpu::BindGroupLayout) -> wgpu::RenderPipeline {
+    pub(crate) fn texture_pipeline(
+        projection_layout: &wgpu::BindGroupLayout,
+    ) -> wgpu::RenderPipeline {
         let device = &RendererGlobals::get().device;
         let shader = device.create_shader_module(include_wgsl!("color.wgsl"));
         let layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
@@ -282,6 +243,36 @@ impl TextureSprite {
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default, bytemuck::Pod, bytemuck::Zeroable)]
+pub struct ColorVertex {
+    pub pos: Vec3,
+    pub color: [f32; 4],
+}
+
+impl ColorVertex {
+    pub(crate) fn desc<'a>() -> wgpu::VertexBufferLayout<'a> {
+        wgpu::VertexBufferLayout {
+            array_stride: size_of::<Self>() as u64,
+            step_mode: wgpu::VertexStepMode::Vertex,
+            attributes: &[
+                wgpu::VertexAttribute {
+                    format: wgpu::VertexFormat::Float32x3,
+                    offset: 0,
+                    shader_location: 0,
+                },
+                wgpu::VertexAttribute {
+                    format: wgpu::VertexFormat::Float32x4,
+                    offset: size_of::<Vec3>() as u64,
+                    shader_location: 1,
+                },
+            ],
+        }
+    }
+}
+
+impl Vertex for ColorVertex {}
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct TextureVertex {
     pub pos: Vec3,
     pub tex_coords: Vec2,
@@ -307,3 +298,5 @@ impl TextureVertex {
         }
     }
 }
+
+impl Vertex for TextureVertex {}
