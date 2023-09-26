@@ -13,6 +13,7 @@ impl Game for Main {
         //     .push(ColorSprite::new_quad(wgpu::Color::WHITE));
 
         *data.renderer.projection = Projection::FixedHeight(1.0);
+        data.renderer.window.set_title("Rengine Template");
 
         data.renderer.texture_sprites.push(TextureSprite::new_quad(
             &texture::from_memory(include_bytes!("test.png")).unwrap(),
