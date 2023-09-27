@@ -10,6 +10,12 @@ struct Chess;
 impl Game for Chess {
     fn init(&mut self, data: rengine::GameData) {
         *data.renderer.projection = Projection::FixedHeight(10.0);
+        data.renderer.background = wgpu::Color {
+            r: 0.1,
+            g: 0.1,
+            b: 0.1,
+            a: 1.0,
+        };
 
         data.renderer.sprites.extend((0..64).map(|index| {
             let x = index % 8;

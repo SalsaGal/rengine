@@ -30,6 +30,7 @@ pub struct Renderer {
 
     pub window: Window,
 
+    pub background: wgpu::Color,
     pub projection: Dirty<Projection>,
     projection_buffer: wgpu::Buffer,
     projection_bind_group: wgpu::BindGroup,
@@ -120,6 +121,7 @@ impl Renderer {
 
             window,
 
+            background: wgpu::Color::BLACK,
             projection: Dirty::new(projection),
             projection_buffer,
             projection_bind_group,
@@ -173,7 +175,7 @@ impl Renderer {
                     view: &view,
                     resolve_target: None,
                     ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
+                        load: wgpu::LoadOp::Clear(self.background),
                         store: true,
                     },
                 })],
