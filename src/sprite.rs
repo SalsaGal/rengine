@@ -115,25 +115,28 @@ impl Sprite {
     pub fn new_quad_texture(
         view: &wgpu::TextureView,
         sampler: &wgpu::Sampler,
+        source: Option<Rect>,
         transform: &[Transform],
     ) -> Self {
+        let source = source.unwrap_or_default();
+
         Self::new_polygon(
             &[
                 TextureVertex {
                     pos: vec3(-0.5, -0.5, 0.0),
-                    tex_coords: vec2(0.0, 1.0),
+                    tex_coords: source.pos + vec2(0.0, source.size.y),
                 },
                 TextureVertex {
                     pos: vec3(0.5, -0.5, 0.0),
-                    tex_coords: vec2(1.0, 1.0),
+                    tex_coords: source.pos + source.size,
                 },
                 TextureVertex {
                     pos: vec3(0.5, 0.5, 0.0),
-                    tex_coords: vec2(1.0, 0.0),
+                    tex_coords: source.pos + vec2(source.size.x, 0.0),
                 },
                 TextureVertex {
                     pos: vec3(-0.5, 0.5, 0.0),
-                    tex_coords: vec2(0.0, 0.0),
+                    tex_coords: source.pos,
                 },
             ],
             &[0, 1, 2, 0, 2, 3],
@@ -319,3 +322,17 @@ impl TextureVertex {
 }
 
 impl Vertex for TextureVertex {}
+
+pub struct Rect {
+    pub pos: Vec2,
+    pub size: Vec2,
+}
+
+impl Default for Rect {
+    fn default() -> Self {
+        Self {
+            pos: Vec2::ZERO,
+            size: Vec2::ONE,
+        }
+    }
+}

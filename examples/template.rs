@@ -15,6 +15,7 @@ impl Game for Main {
         data.renderer.sprites.push(Sprite::new_quad_texture(
             &texture::from_memory(include_bytes!("test.png")).unwrap(),
             &texture::linear_sampler(),
+            None,
             &[
                 Transform {
                     translation: Vec3::NEG_X,

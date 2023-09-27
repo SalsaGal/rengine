@@ -1,6 +1,11 @@
-use glam::vec3;
+use glam::{vec2, vec3};
 use rengine::{
-    input::InputState, renderer::Projection, sprite::Sprite, transform::Transform, Game,
+    input::InputState,
+    renderer::Projection,
+    sprite::{Rect, Sprite},
+    texture,
+    transform::Transform,
+    Game,
 };
 
 fn main() {
@@ -34,6 +39,18 @@ impl Game for Chess {
                 }],
             )
         }));
+
+        let pieces = texture::from_memory(include_bytes!("ChessPiecesArray.png")).unwrap();
+        let sampler = texture::linear_sampler();
+        data.renderer.sprites.push(Sprite::new_quad_texture(
+            &pieces,
+            &sampler,
+            Some(Rect {
+                pos: vec2(0.5, 0.0),
+                size: vec2(1.0 / 6.0, 0.5),
+            }),
+            &[Transform::default()],
+        ));
     }
 
     fn update(&mut self, data: &mut rengine::GameData) {
