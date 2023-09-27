@@ -5,6 +5,8 @@ pub mod sprite;
 pub mod texture;
 pub mod transform;
 
+use std::time::{Duration, Instant};
+
 use input::Input;
 use renderer::Renderer;
 use winit::{
@@ -25,18 +27,23 @@ pub fn run(mut game: impl Game + 'static) -> ! {
             renderer::Projection::FixedWidth(2.0),
         )),
         exit_code: None,
+        delta_time: Duration::default(),
+        start_time: Instant::now(),
     };
 
     game.init(&mut data);
 
+    let mut last_update = Instant::now();
     event_loop.run(move |event, _, control_flow| match event {
         Event::MainEventsCleared => {
+            data.delta_time = Instant::now().duration_since(last_update);
             game.update(&mut data);
             if let Some(code) = data.exit_code {
                 *control_flow = ControlFlow::ExitWithCode(code);
             }
             data.input.update();
             data.renderer.window.request_redraw();
+            last_update = Instant::now();
         }
         Event::RedrawRequested(..) => match data.renderer.render() {
             Err(wgpu::SurfaceError::Lost) => {
@@ -72,6 +79,8 @@ pub struct GameData {
     pub input: Input,
     pub renderer: Renderer,
     pub exit_code: Option<i32>,
+    pub delta_time: Duration,
+    pub start_time: Instant,
 }
 
 impl GameData {
