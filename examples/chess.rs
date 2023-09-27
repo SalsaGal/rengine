@@ -1,5 +1,7 @@
 use glam::vec3;
-use rengine::{renderer::Projection, sprite::Sprite, transform::Transform, Game};
+use rengine::{
+    input::InputState, renderer::Projection, sprite::Sprite, transform::Transform, Game,
+};
 
 fn main() {
     rengine::run(Chess);
@@ -32,5 +34,11 @@ impl Game for Chess {
                 }],
             )
         }));
+    }
+
+    fn update(&mut self, data: rengine::GameData) {
+        if data.input.is_key('q', InputState::Pressed) {
+            println!("Quit");
+        }
     }
 }
