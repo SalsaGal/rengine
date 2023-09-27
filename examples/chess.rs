@@ -38,7 +38,7 @@ impl Game for Chess {
 
     fn update(&mut self, data: &mut rengine::GameData) {
         if data.input.is_key('q', InputState::Pressed) {
-            data.exit_code = Some(0);
+            data.exit();
         }
     }
 }

@@ -69,6 +69,12 @@ pub struct GameData {
     pub exit_code: Option<i32>,
 }
 
+impl GameData {
+    pub fn exit(&mut self) {
+        self.exit_code = Some(0);
+    }
+}
+
 #[allow(unused)]
 pub trait Game {
     fn init(&mut self, data: &mut GameData) {}
