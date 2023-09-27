@@ -1,12 +1,12 @@
 use std::mem::size_of;
 
-use glam::{vec2, vec3, Vec2, Vec3};
+use glam::{vec2, vec3, Mat4, Vec2, Vec3};
 use wgpu::{
     include_wgsl,
     util::{BufferInitDescriptor, DeviceExt},
 };
 
-use crate::renderer::RendererGlobals;
+use crate::{renderer::RendererGlobals, transform::Transform};
 
 pub enum SpriteType {
     Color,
@@ -20,6 +20,8 @@ pub struct Sprite {
     pub(crate) index_buffer: wgpu::Buffer,
     pub(crate) index_count: u32,
     pub(crate) ty: SpriteType,
+    pub(crate) transform_buffer: wgpu::Buffer,
+    pub(crate) transform_count: u32,
 }
 
 impl Sprite {
@@ -28,6 +30,7 @@ impl Sprite {
         vertices: &[impl Vertex],
         indices: &[u16],
         texture: Option<(&wgpu::TextureView, &wgpu::Sampler)>,
+        transforms: &[Transform],
     ) -> Self {
         Self {
             vertex_buffer: RendererGlobals::get().device.create_buffer_init(
@@ -66,11 +69,21 @@ impl Sprite {
                 }
                 None => SpriteType::Color,
             },
+            transform_buffer: RendererGlobals::get().device.create_buffer_init(
+                &BufferInitDescriptor {
+                    label: None,
+                    contents: bytemuck::cast_slice(
+                        &transforms.iter().map(Mat4::from).collect::<Vec<_>>(),
+                    ),
+                    usage: wgpu::BufferUsages::VERTEX,
+                },
+            ),
+            transform_count: transforms.len() as u32,
         }
     }
 
     #[must_use]
-    pub fn new_quad_color(color: wgpu::Color) -> Self {
+    pub fn new_quad_color(color: wgpu::Color, transforms: &[Transform]) -> Self {
         let color = [color.r, color.g, color.b, color.a].map(|x| x as f32);
 
         Self::new_polygon(
@@ -94,11 +107,16 @@ impl Sprite {
             ],
             &[0, 1, 2, 0, 2, 3],
             None,
+            transforms,
         )
     }
 
     #[must_use]
-    pub fn new_quad_texture(view: &wgpu::TextureView, sampler: &wgpu::Sampler) -> Self {
+    pub fn new_quad_texture(
+        view: &wgpu::TextureView,
+        sampler: &wgpu::Sampler,
+        transform: &[Transform],
+    ) -> Self {
         Self::new_polygon(
             &[
                 TextureVertex {
@@ -120,6 +138,7 @@ impl Sprite {
             ],
             &[0, 1, 2, 0, 2, 3],
             Some((view, sampler)),
+            transform,
         )
     }
 
@@ -139,7 +158,7 @@ impl Sprite {
             vertex: wgpu::VertexState {
                 module: &shader,
                 entry_point: "color_vertex",
-                buffers: &[ColorVertex::desc()],
+                buffers: &[ColorVertex::desc(), Transform::desc()],
             },
             primitive: wgpu::PrimitiveState {
                 topology: wgpu::PrimitiveTopology::TriangleList,
@@ -184,7 +203,7 @@ impl Sprite {
             vertex: wgpu::VertexState {
                 module: &shader,
                 entry_point: "texture_vertex",
-                buffers: &[TextureVertex::desc()],
+                buffers: &[TextureVertex::desc(), Transform::desc()],
             },
             primitive: wgpu::PrimitiveState {
                 topology: wgpu::PrimitiveTopology::TriangleList,
@@ -257,12 +276,12 @@ impl ColorVertex {
                 wgpu::VertexAttribute {
                     format: wgpu::VertexFormat::Float32x3,
                     offset: 0,
-                    shader_location: 0,
+                    shader_location: 4,
                 },
                 wgpu::VertexAttribute {
                     format: wgpu::VertexFormat::Float32x4,
                     offset: size_of::<Vec3>() as u64,
-                    shader_location: 1,
+                    shader_location: 5,
                 },
             ],
         }
@@ -287,12 +306,12 @@ impl TextureVertex {
                 wgpu::VertexAttribute {
                     format: wgpu::VertexFormat::Float32x3,
                     offset: 0,
-                    shader_location: 0,
+                    shader_location: 4,
                 },
                 wgpu::VertexAttribute {
                     format: wgpu::VertexFormat::Float32x2,
                     offset: size_of::<Vec3>() as u64,
-                    shader_location: 1,
+                    shader_location: 5,
                 },
             ],
         }

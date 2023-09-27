@@ -1,4 +1,5 @@
-use rengine::{renderer::Projection, sprite::Sprite, texture, Game};
+use glam::Vec3;
+use rengine::{renderer::Projection, sprite::Sprite, texture, transform::Transform, Game};
 
 fn main() {
     rengine::run(Main);
@@ -14,6 +15,16 @@ impl Game for Main {
         data.renderer.sprites.push(Sprite::new_quad_texture(
             &texture::from_memory(include_bytes!("test.png")).unwrap(),
             &texture::linear_sampler(),
+            &[
+                Transform {
+                    translation: Vec3::NEG_X,
+                    ..Default::default()
+                },
+                Transform {
+                    translation: Vec3::X,
+                    ..Default::default()
+                },
+            ],
         ));
     }
 }

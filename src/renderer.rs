@@ -190,9 +190,10 @@ impl Renderer {
                     }
                 }
                 render_pass.set_vertex_buffer(0, model.vertex_buffer.slice(..));
+                render_pass.set_vertex_buffer(1, model.transform_buffer.slice(..));
                 render_pass
                     .set_index_buffer(model.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
-                render_pass.draw_indexed(0..model.index_count, 0, 0..1);
+                render_pass.draw_indexed(0..model.index_count, 0, 0..model.transform_count);
             }
         }
 
