@@ -24,9 +24,9 @@ impl Game for Chess {
             let y = index / 8;
             Sprite::new_quad_color(
                 if (x + y) % 2 == 0 {
-                    wgpu::Color::WHITE
-                } else {
                     wgpu::Color::BLACK
+                } else {
+                    wgpu::Color::WHITE
                 },
                 &[Transform {
                     translation: vec3(x as f32 - 3.5, y as f32 - 3.5, 0.0),
