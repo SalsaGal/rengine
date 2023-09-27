@@ -31,7 +31,7 @@ pub fn run(mut game: impl Game + 'static) -> ! {
         }
         Event::RedrawRequested(..) => match data.renderer.render() {
             Err(wgpu::SurfaceError::Lost) => {
-                data.renderer.resize(data.renderer.window.inner_size())
+                data.renderer.resize(data.renderer.window.inner_size());
             }
             Err(wgpu::SurfaceError::OutOfMemory) => panic!("SurfaceError: Out Of Memory!"),
             Err(e) => eprintln!("SurfaceError: {e}"),
@@ -47,7 +47,7 @@ pub fn run(mut game: impl Game + 'static) -> ! {
             WindowEvent::CursorMoved { position, .. } => data.input.handle_cursor(position),
             WindowEvent::KeyboardInput { input, .. } => data.input.handle_key(input),
             WindowEvent::MouseInput { state, button, .. } => {
-                data.input.handle_button(button, state)
+                data.input.handle_button(button, state);
             }
             WindowEvent::Resized(size) => data.renderer.resize(size),
             WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
