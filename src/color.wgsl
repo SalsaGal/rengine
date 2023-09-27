@@ -1,5 +1,7 @@
 @group(0)@binding(0)
 var<uniform> projection: mat4x4<f32>;
+@group(0)@binding(1)
+var<uniform> camera: mat4x4<f32>;
 
 @group(1)@binding(0)
 var texture: texture_2d<f32>;
@@ -31,7 +33,7 @@ struct ColorOutput {
 fn color_vertex(input: ColorInput, transform: Transform) -> ColorOutput {
     let transform_mat = transform_to_mat(transform);
     var output: ColorOutput;
-    output.pos = projection * transform_mat * vec4<f32>(input.pos, 1.0);
+    output.pos = projection * camera * transform_mat * vec4<f32>(input.pos, 1.0);
     output.color = input.color;
     return output;
 }
@@ -55,7 +57,7 @@ struct TextureOutput {
 fn texture_vertex(input: TextureInput, transform: Transform) -> TextureOutput {
     let transform_mat = transform_to_mat(transform);
     var output: TextureOutput;
-    output.pos = projection * transform_mat * vec4<f32>(input.pos, 1.0);
+    output.pos = projection * camera * transform_mat * vec4<f32>(input.pos, 1.0);
     output.tex_coords = input.tex_coords;
     return output;
 }

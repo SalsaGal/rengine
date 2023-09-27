@@ -8,7 +8,10 @@ use wgpu::{
 };
 use winit::{dpi::PhysicalSize, window::Window};
 
-use crate::sprite::{Sprite, SpriteType};
+use crate::{
+    camera::Camera,
+    sprite::{Sprite, SpriteType},
+};
 
 #[derive(Debug)]
 pub struct RendererGlobals {
@@ -31,6 +34,8 @@ pub struct Renderer {
     pub window: Window,
 
     pub background: wgpu::Color,
+    pub camera: Dirty<Camera>,
+    camera_buffer: wgpu::Buffer,
     pub projection: Dirty<Projection>,
     projection_buffer: wgpu::Buffer,
     projection_bind_group: wgpu::BindGroup,
@@ -40,7 +45,7 @@ pub struct Renderer {
 }
 
 impl Renderer {
-    pub(crate) async fn new(window: Window, projection: Projection) -> Self {
+    pub(crate) async fn new(window: Window, camera: Camera, projection: Projection) -> Self {
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
             backends: wgpu::Backends::PRIMARY,
             dx12_shader_compiler: wgpu::Dx12Compiler::Fxc,
@@ -86,19 +91,39 @@ impl Renderer {
                     )]),
                     usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::UNIFORM,
                 });
+        let camera_buffer =
+            RendererGlobals::get()
+                .device
+                .create_buffer_init(&BufferInitDescriptor {
+                    label: None,
+                    contents: bytemuck::cast_slice(&[Mat4::from(&camera)]),
+                    usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::UNIFORM,
+                });
         let projection_bind_group_layout = RendererGlobals::get().device.create_bind_group_layout(
             &wgpu::BindGroupLayoutDescriptor {
                 label: None,
-                entries: &[wgpu::BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: wgpu::ShaderStages::VERTEX,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
+                entries: &[
+                    wgpu::BindGroupLayoutEntry {
+                        binding: 0,
+                        visibility: wgpu::ShaderStages::VERTEX,
+                        ty: wgpu::BindingType::Buffer {
+                            ty: wgpu::BufferBindingType::Uniform,
+                            has_dynamic_offset: false,
+                            min_binding_size: None,
+                        },
+                        count: None,
                     },
-                    count: None,
-                }],
+                    wgpu::BindGroupLayoutEntry {
+                        binding: 1,
+                        visibility: wgpu::ShaderStages::VERTEX,
+                        ty: wgpu::BindingType::Buffer {
+                            ty: wgpu::BufferBindingType::Uniform,
+                            has_dynamic_offset: false,
+                            min_binding_size: None,
+                        },
+                        count: None,
+                    },
+                ],
             },
         );
         let projection_bind_group =
@@ -107,12 +132,20 @@ impl Renderer {
                 .create_bind_group(&wgpu::BindGroupDescriptor {
                     label: Some("projection"),
                     layout: &projection_bind_group_layout,
-                    entries: &[wgpu::BindGroupEntry {
-                        binding: 0,
-                        resource: wgpu::BindingResource::Buffer(
-                            projection_buffer.as_entire_buffer_binding(),
-                        ),
-                    }],
+                    entries: &[
+                        wgpu::BindGroupEntry {
+                            binding: 0,
+                            resource: wgpu::BindingResource::Buffer(
+                                projection_buffer.as_entire_buffer_binding(),
+                            ),
+                        },
+                        wgpu::BindGroupEntry {
+                            binding: 1,
+                            resource: wgpu::BindingResource::Buffer(
+                                camera_buffer.as_entire_buffer_binding(),
+                            ),
+                        },
+                    ],
                 });
 
         Self {
@@ -122,6 +155,8 @@ impl Renderer {
             window,
 
             background: wgpu::Color::BLACK,
+            camera: Dirty::new(camera),
+            camera_buffer,
             projection: Dirty::new(projection),
             projection_buffer,
             projection_bind_group,
@@ -147,8 +182,16 @@ impl Renderer {
     }
 
     pub(crate) fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
+        // Can't use `Dirty::clean` because it requires weird mutability issues
+        if self.camera.dirty {
+            RendererGlobals::get().queue.write_buffer(
+                &self.camera_buffer,
+                0,
+                bytemuck::cast_slice(&[Mat4::from(&*self.camera)]),
+            );
+            self.projection.dirty = false;
+        }
         if self.projection.dirty {
-            // Can't use `Dirty::clean` because it requires weird mutability issues
             RendererGlobals::get().queue.write_buffer(
                 &self.projection_buffer,
                 0,

@@ -1,3 +1,4 @@
+pub mod camera;
 pub mod input;
 pub mod renderer;
 pub mod sprite;
@@ -18,7 +19,11 @@ pub fn run(mut game: impl Game + 'static) -> ! {
 
     let mut data = GameData {
         input: Input::new(),
-        renderer: pollster::block_on(Renderer::new(window, renderer::Projection::FixedWidth(2.0))),
+        renderer: pollster::block_on(Renderer::new(
+            window,
+            camera::Camera::default(),
+            renderer::Projection::FixedWidth(2.0),
+        )),
         exit_code: None,
     };
 
