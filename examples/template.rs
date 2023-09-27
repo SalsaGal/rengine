@@ -17,14 +17,8 @@ impl Game for Main {
             &texture::linear_sampler(),
             None,
             &[
-                Transform {
-                    translation: Vec3::NEG_X,
-                    ..Default::default()
-                },
-                Transform {
-                    translation: Vec3::X,
-                    ..Default::default()
-                },
+                Transform::translation(Vec3::NEG_X),
+                Transform::translation(Vec3::X),
             ],
         ));
     }

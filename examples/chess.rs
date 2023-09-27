@@ -33,10 +33,11 @@ impl Game for Chess {
                 } else {
                     wgpu::Color::WHITE
                 },
-                &[Transform {
-                    translation: vec3(x as f32 - 3.5, y as f32 - 3.5, 0.0),
-                    ..Default::default()
-                }],
+                &[Transform::translation(vec3(
+                    x as f32 - 3.5,
+                    y as f32 - 3.5,
+                    0.0,
+                ))],
             )
         }));
 

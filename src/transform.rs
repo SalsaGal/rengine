@@ -2,7 +2,7 @@ use std::mem::size_of;
 
 use glam::{Mat4, Quat, Vec3};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Transform {
     pub translation: Vec3,
     pub rotation: Quat,
@@ -10,6 +10,42 @@ pub struct Transform {
 }
 
 impl Transform {
+    pub fn translation(translation: Vec3) -> Self {
+        Self {
+            translation,
+            ..Default::default()
+        }
+    }
+
+    pub fn rotation(rotation: Quat) -> Self {
+        Self {
+            rotation,
+            ..Default::default()
+        }
+    }
+
+    pub fn scale(scale: Vec3) -> Self {
+        Self {
+            scale,
+            ..Default::default()
+        }
+    }
+
+    pub fn with_translation(self, translation: Vec3) -> Self {
+        Self {
+            translation,
+            ..self
+        }
+    }
+
+    pub fn with_rotation(self, rotation: Quat) -> Self {
+        Self { rotation, ..self }
+    }
+
+    pub fn with_scale(self, scale: Vec3) -> Self {
+        Self { scale, ..self }
+    }
+
     pub(crate) fn desc<'a>() -> wgpu::VertexBufferLayout<'a> {
         wgpu::VertexBufferLayout {
             array_stride: size_of::<Mat4>() as u64,
