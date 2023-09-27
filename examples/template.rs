@@ -8,7 +8,7 @@ fn main() {
 struct Main;
 
 impl Game for Main {
-    fn init(&mut self, data: rengine::GameData) {
+    fn init(&mut self, data: &mut rengine::GameData) {
         *data.renderer.projection = Projection::FixedHeight(2.0);
         data.renderer.window.set_title("Rengine Template");
 

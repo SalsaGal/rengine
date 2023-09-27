@@ -10,7 +10,7 @@ fn main() {
 struct Chess;
 
 impl Game for Chess {
-    fn init(&mut self, data: rengine::GameData) {
+    fn init(&mut self, data: &mut rengine::GameData) {
         *data.renderer.projection = Projection::FixedHeight(10.0);
         data.renderer.background = wgpu::Color {
             r: 0.1,
@@ -36,7 +36,7 @@ impl Game for Chess {
         }));
     }
 
-    fn update(&mut self, data: rengine::GameData) {
+    fn update(&mut self, data: &mut rengine::GameData) {
         if data.input.is_key('q', InputState::Pressed) {
             println!("Quit");
         }

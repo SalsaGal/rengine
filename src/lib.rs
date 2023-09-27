@@ -16,26 +16,23 @@ pub fn run(mut game: impl Game + 'static) -> ! {
     let event_loop = EventLoop::new();
     let window = WindowBuilder::new().build(&event_loop).unwrap();
 
-    let mut input_handler = Input::new();
-    let mut renderer =
-        pollster::block_on(Renderer::new(window, renderer::Projection::FixedWidth(2.0)));
+    let mut data = GameData {
+        input: Input::new(),
+        renderer: pollster::block_on(Renderer::new(window, renderer::Projection::FixedWidth(2.0))),
+    };
 
-    game.init(GameData {
-        renderer: &mut renderer,
-        input: &input_handler,
-    });
+    game.init(&mut data);
 
     event_loop.run(move |event, _, control_flow| match event {
         Event::MainEventsCleared => {
-            game.update(GameData {
-                renderer: &mut renderer,
-                input: &input_handler,
-            });
-            input_handler.update();
-            renderer.window.request_redraw();
+            game.update(&mut data);
+            data.input.update();
+            data.renderer.window.request_redraw();
         }
-        Event::RedrawRequested(..) => match renderer.render() {
-            Err(wgpu::SurfaceError::Lost) => renderer.resize(renderer.window.inner_size()),
+        Event::RedrawRequested(..) => match data.renderer.render() {
+            Err(wgpu::SurfaceError::Lost) => {
+                data.renderer.resize(data.renderer.window.inner_size())
+            }
             Err(wgpu::SurfaceError::OutOfMemory) => panic!("SurfaceError: Out Of Memory!"),
             Err(e) => eprintln!("SurfaceError: {e}"),
             Ok(_) => {}
@@ -45,16 +42,16 @@ pub fn run(mut game: impl Game + 'static) -> ! {
                 device_id,
                 axis,
                 value,
-            } => input_handler.handle_axis(device_id, axis, value),
+            } => data.input.handle_axis(device_id, axis, value),
             WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
-            WindowEvent::CursorMoved { position, .. } => input_handler.handle_cursor(position),
-            WindowEvent::KeyboardInput { input, .. } => input_handler.handle_key(input),
+            WindowEvent::CursorMoved { position, .. } => data.input.handle_cursor(position),
+            WindowEvent::KeyboardInput { input, .. } => data.input.handle_key(input),
             WindowEvent::MouseInput { state, button, .. } => {
-                input_handler.handle_button(button, state)
+                data.input.handle_button(button, state)
             }
-            WindowEvent::Resized(size) => renderer.resize(size),
+            WindowEvent::Resized(size) => data.renderer.resize(size),
             WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                renderer.resize(*new_inner_size);
+                data.renderer.resize(*new_inner_size);
             }
             _ => {}
         },
@@ -62,13 +59,13 @@ pub fn run(mut game: impl Game + 'static) -> ! {
     })
 }
 
-pub struct GameData<'a> {
-    pub renderer: &'a mut Renderer,
-    pub input: &'a Input,
+pub struct GameData {
+    pub input: Input,
+    pub renderer: Renderer,
 }
 
 #[allow(unused)]
 pub trait Game {
-    fn init(&mut self, data: GameData) {}
-    fn update(&mut self, data: GameData) {}
+    fn init(&mut self, data: &mut GameData) {}
+    fn update(&mut self, data: &mut GameData) {}
 }
