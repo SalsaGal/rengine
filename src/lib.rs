@@ -15,6 +15,7 @@ use winit::{
     window::WindowBuilder,
 };
 
+/// Consumes the [`Game`] and runs it. Should be the last function in the main function.
 pub fn run(mut game: impl Game + 'static) -> ! {
     let event_loop = EventLoop::new();
     let window = WindowBuilder::new().build(&event_loop).unwrap();
@@ -75,22 +76,33 @@ pub fn run(mut game: impl Game + 'static) -> ! {
     })
 }
 
+/// Common game state that is handed to the [`Game`] state during updates, and allowing control.
 pub struct GameData {
+    /// A manager for reading player input.
     pub input: Input,
+    /// A manager to handle drawing graphics.
     pub renderer: Renderer,
+    /// If `None` does nothing, but if set to `Some` then the program will exit, returning the `i32`.
     pub exit_code: Option<i32>,
+    /// The time since the last update.
     pub delta_time: Duration,
+    /// The time that the game began running.
     pub start_time: Instant,
 }
 
 impl GameData {
+    /// Shorthand to set `exit_code` to 0.
     pub fn exit(&mut self) {
         self.exit_code = Some(0);
     }
 }
 
+/// This trait must be implemented on a `struct` that handles the control flow of the game.
 #[allow(unused)]
 pub trait Game {
+    /// Called at the beginning of the game, used for setting up models and anything else that requires the engine state
+    /// have been created but nothing else.
     fn init(&mut self, data: &mut GameData) {}
+    /// Called every frame.
     fn update(&mut self, data: &mut GameData) {}
 }
