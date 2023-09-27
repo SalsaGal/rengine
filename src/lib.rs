@@ -19,6 +19,7 @@ pub fn run(mut game: impl Game + 'static) -> ! {
     let mut data = GameData {
         input: Input::new(),
         renderer: pollster::block_on(Renderer::new(window, renderer::Projection::FixedWidth(2.0))),
+        exit_code: None,
     };
 
     game.init(&mut data);
@@ -26,6 +27,9 @@ pub fn run(mut game: impl Game + 'static) -> ! {
     event_loop.run(move |event, _, control_flow| match event {
         Event::MainEventsCleared => {
             game.update(&mut data);
+            if let Some(code) = data.exit_code {
+                *control_flow = ControlFlow::ExitWithCode(code);
+            }
             data.input.update();
             data.renderer.window.request_redraw();
         }
@@ -62,6 +66,7 @@ pub fn run(mut game: impl Game + 'static) -> ! {
 pub struct GameData {
     pub input: Input,
     pub renderer: Renderer,
+    pub exit_code: Option<i32>,
 }
 
 #[allow(unused)]
