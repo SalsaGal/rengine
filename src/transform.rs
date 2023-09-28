@@ -10,39 +10,45 @@ pub struct Transform {
 }
 
 impl Transform {
-    #[must_use] pub fn translation(translation: Vec3) -> Self {
+    #[must_use]
+    pub fn translation(translation: Vec3) -> Self {
         Self {
             translation,
             ..Default::default()
         }
     }
 
-    #[must_use] pub fn rotation(rotation: Quat) -> Self {
+    #[must_use]
+    pub fn rotation(rotation: Quat) -> Self {
         Self {
             rotation,
             ..Default::default()
         }
     }
 
-    #[must_use] pub fn scale(scale: Vec3) -> Self {
+    #[must_use]
+    pub fn scale(scale: Vec3) -> Self {
         Self {
             scale,
             ..Default::default()
         }
     }
 
-    #[must_use] pub fn with_translation(self, translation: Vec3) -> Self {
+    #[must_use]
+    pub fn with_translation(self, translation: Vec3) -> Self {
         Self {
             translation,
             ..self
         }
     }
 
-    #[must_use] pub fn with_rotation(self, rotation: Quat) -> Self {
+    #[must_use]
+    pub fn with_rotation(self, rotation: Quat) -> Self {
         Self { rotation, ..self }
     }
 
-    #[must_use] pub fn with_scale(self, scale: Vec3) -> Self {
+    #[must_use]
+    pub fn with_scale(self, scale: Vec3) -> Self {
         Self { scale, ..self }
     }
 

@@ -1,7 +1,7 @@
 use std::{path::Path, sync::Arc};
 
 use fxhash::FxHashMap;
-use image::{RgbaImage};
+use image::RgbaImage;
 use wgpu::{util::DeviceExt, TextureView};
 
 use crate::renderer::RendererGlobals;
