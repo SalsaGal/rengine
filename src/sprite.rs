@@ -1,11 +1,11 @@
 use std::mem::size_of;
 
-use glam::{vec2, vec3, Mat4, Vec2, Vec3};
 use wgpu::{
     include_wgsl,
     util::{BufferInitDescriptor, DeviceExt},
 };
 
+pub use glam::*;
 pub use wgpu::Color;
 
 use crate::{renderer::RendererGlobals, transform::Transform};
