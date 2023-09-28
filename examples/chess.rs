@@ -41,7 +41,11 @@ impl Game for Chess {
             )
         }));
 
-        let pieces = texture::from_memory(include_bytes!("ChessPiecesArray.png")).unwrap();
+        let pieces = data
+            .texture_manager
+            .load(texture::TextureSource::Memory(include_bytes!(
+                "ChessPiecesArray.png"
+            )));
         let sampler = texture::linear_sampler();
         data.renderer.sprites.push(Sprite::new_quad_texture(
             &pieces,

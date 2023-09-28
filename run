@@ -5,4 +5,4 @@ cargo run --example chess
 cargo build
 
 [fix]
-cargo clippy --fix --allow-dirty -- -W clippy::pedantic
+cargo clippy --fix --examples --allow-dirty -- -W clippy::pedantic
