@@ -2,6 +2,7 @@ use std::sync::OnceLock;
 
 use dirtytype::Dirty;
 use glam::{vec2, Mat4};
+use slab::Slab;
 use wgpu::{
     util::{BufferInitDescriptor, DeviceExt},
     Device, Queue, Surface, SurfaceConfiguration,
@@ -39,7 +40,7 @@ pub struct Renderer {
     pub projection: Dirty<Projection>,
     projection_buffer: wgpu::Buffer,
     projection_bind_group: wgpu::BindGroup,
-    pub sprites: Vec<Sprite>,
+    pub sprites: Slab<Sprite>,
     color_pipeline: wgpu::RenderPipeline,
     texture_pipeline: wgpu::RenderPipeline,
     depth_view: wgpu::TextureView,
@@ -162,7 +163,7 @@ impl Renderer {
             color_pipeline: Sprite::color_pipeline(&projection_bind_group_layout),
             texture_pipeline: Sprite::texture_pipeline(&projection_bind_group_layout),
             depth_view: Self::make_depth_texture(window.inner_size()),
-            sprites: vec![],
+            sprites: Slab::default(),
 
             window,
         }
@@ -236,7 +237,7 @@ impl Renderer {
             });
 
             render_pass.set_bind_group(0, &self.projection_bind_group, &[]);
-            for model in &self.sprites {
+            for (_, model) in &self.sprites {
                 match &model.ty {
                     SpriteType::Color => render_pass.set_pipeline(&self.color_pipeline),
                     SpriteType::Texture(texture) => {

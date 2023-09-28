@@ -24,7 +24,7 @@ impl Game for Chess {
             a: 1.0,
         };
 
-        data.renderer.sprites.extend((0..64).map(|index| {
+        for sprite in (0..64).map(|index| {
             let x = index % 8;
             let y = index / 8;
             Sprite::new_quad_color(
@@ -39,7 +39,9 @@ impl Game for Chess {
                     -1.0,
                 ))],
             )
-        }));
+        }) {
+            data.renderer.sprites.insert(sprite);
+        }
 
         let pieces = data
             .texture_manager
@@ -47,7 +49,7 @@ impl Game for Chess {
                 "ChessPiecesArray.png"
             )));
         let sampler = texture::linear_sampler();
-        data.renderer.sprites.push(Sprite::new_quad_texture(
+        data.renderer.sprites.insert(Sprite::new_quad_texture(
             &pieces,
             &sampler,
             Some(Rect {
