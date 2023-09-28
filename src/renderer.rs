@@ -261,7 +261,7 @@ impl Renderer {
     }
 
     fn projection_to_mat4(projection: Projection, size: PhysicalSize<u32>) -> Mat4 {
-        let size = vec2(size.width as f32, size.height as f32);
+        let window_size = vec2(size.width as f32, size.height as f32);
         match projection {
             Projection::Absolute(width, height) => Mat4::orthographic_rh(
                 -width / 2.0,
@@ -274,20 +274,26 @@ impl Renderer {
             Projection::FixedWidth(width) => Mat4::orthographic_rh(
                 -width / 2.0,
                 width / 2.0,
-                -width * (size.y / size.x) / 2.0,
-                width * (size.y / size.x) / 2.0,
+                -width * (window_size.y / window_size.x) / 2.0,
+                width * (window_size.y / window_size.x) / 2.0,
                 -10.0,
                 10.0,
             ),
             Projection::FixedHeight(height) => Mat4::orthographic_rh(
-                -height * (size.x / size.y) / 2.0,
-                height * (size.x / size.y) / 2.0,
+                -height * (window_size.x / window_size.y) / 2.0,
+                height * (window_size.x / window_size.y) / 2.0,
                 -height / 2.0,
                 height / 2.0,
                 -10.0,
                 10.0,
             ),
-            _ => todo!(),
+            Projection::FixedMinimum(width, height) => {
+                if window_size.x > window_size.y {
+                    Self::projection_to_mat4(Projection::FixedHeight(height), size)
+                } else {
+                    Self::projection_to_mat4(Projection::FixedWidth(width), size)
+                }
+            }
         }
     }
 

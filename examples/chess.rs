@@ -16,7 +16,7 @@ struct Chess;
 
 impl Game for Chess {
     fn init(&mut self, data: &mut rengine::GameData) {
-        *data.renderer.projection = Projection::FixedHeight(10.0);
+        *data.renderer.projection = Projection::FixedMinimum(10.0, 10.0);
         data.renderer.background = wgpu::Color {
             r: 0.1,
             g: 0.1,
