@@ -64,5 +64,10 @@ fn texture_vertex(input: TextureInput, transform: Transform) -> TextureOutput {
 
 @fragment
 fn texture_fragment(output: TextureOutput) -> @location(0) vec4<f32> {
-    return textureSample(texture, texture_sampler, output.tex_coords);
+    let color = textureSample(texture, texture_sampler, output.tex_coords);
+    if (color.a == 0.0) {
+        discard;
+    } else {
+        return color;
+    }
 }

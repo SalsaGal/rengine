@@ -42,6 +42,7 @@ pub struct Renderer {
     pub sprites: Vec<Sprite>,
     color_pipeline: wgpu::RenderPipeline,
     texture_pipeline: wgpu::RenderPipeline,
+    depth_view: wgpu::TextureView,
 }
 
 impl Renderer {
@@ -152,8 +153,6 @@ impl Renderer {
             surface,
             config,
 
-            window,
-
             background: wgpu::Color::BLACK,
             camera: Dirty::new(camera),
             camera_buffer,
@@ -162,7 +161,10 @@ impl Renderer {
             projection_bind_group,
             color_pipeline: Sprite::color_pipeline(&projection_bind_group_layout),
             texture_pipeline: Sprite::texture_pipeline(&projection_bind_group_layout),
+            depth_view: Self::make_depth_texture(window.inner_size()),
             sprites: vec![],
+
+            window,
         }
     }
 
@@ -177,6 +179,7 @@ impl Renderer {
                 self.window.inner_size(),
             )]),
         );
+        self.depth_view = Self::make_depth_texture(size);
         self.surface
             .configure(&RendererGlobals::get().device, &self.config);
     }
@@ -222,7 +225,14 @@ impl Renderer {
                         store: true,
                     },
                 })],
-                depth_stencil_attachment: None,
+                depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+                    view: &self.depth_view,
+                    depth_ops: Some(wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(1.0),
+                        store: true,
+                    }),
+                    stencil_ops: None,
+                }),
             });
 
             render_pass.set_bind_group(0, &self.projection_bind_group, &[]);
@@ -279,6 +289,26 @@ impl Renderer {
             ),
             _ => todo!(),
         }
+    }
+
+    fn make_depth_texture(size: PhysicalSize<u32>) -> wgpu::TextureView {
+        RendererGlobals::get()
+            .device
+            .create_texture(&wgpu::TextureDescriptor {
+                label: Some("depth"),
+                size: wgpu::Extent3d {
+                    width: size.width,
+                    height: size.height,
+                    depth_or_array_layers: 1,
+                },
+                mip_level_count: 1,
+                sample_count: 1,
+                dimension: wgpu::TextureDimension::D2,
+                format: wgpu::TextureFormat::Depth32Float,
+                usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
+                view_formats: &[],
+            })
+            .create_view(&wgpu::TextureViewDescriptor::default())
     }
 }
 

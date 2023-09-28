@@ -36,7 +36,7 @@ impl Game for Chess {
                 &[Transform::translation(vec3(
                     x as f32 - 3.5,
                     y as f32 - 3.5,
-                    0.0,
+                    -1.0,
                 ))],
             )
         }));
