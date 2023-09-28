@@ -2,7 +2,7 @@ use glam::{vec2, vec3};
 use rengine::{
     input::InputState,
     renderer::Projection,
-    sprite::{Rect, Sprite},
+    sprite::{Color, Rect, Sprite},
     texture,
     transform::Transform,
     Game,
@@ -17,7 +17,7 @@ struct Chess;
 impl Game for Chess {
     fn init(&mut self, data: &mut rengine::GameData) {
         *data.renderer.projection = Projection::FixedMinimum(10.0, 10.0);
-        data.renderer.background = wgpu::Color {
+        data.renderer.background = Color {
             r: 0.1,
             g: 0.1,
             b: 0.1,
@@ -29,9 +29,9 @@ impl Game for Chess {
             let y = index / 8;
             Sprite::new_quad_color(
                 if (x + y) % 2 == 0 {
-                    wgpu::Color::BLACK
+                    Color::BLACK
                 } else {
-                    wgpu::Color::WHITE
+                    Color::WHITE
                 },
                 &[Transform::translation(vec3(
                     x as f32 - 3.5,

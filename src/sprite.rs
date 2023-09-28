@@ -6,6 +6,8 @@ use wgpu::{
     util::{BufferInitDescriptor, DeviceExt},
 };
 
+pub use wgpu::Color;
+
 use crate::{renderer::RendererGlobals, transform::Transform};
 
 pub enum SpriteType {
@@ -83,7 +85,7 @@ impl Sprite {
     }
 
     #[must_use]
-    pub fn new_quad_color(color: wgpu::Color, transforms: &[Transform]) -> Self {
+    pub fn new_quad_color(color: Color, transforms: &[Transform]) -> Self {
         let color = [color.r, color.g, color.b, color.a].map(|x| x as f32);
 
         Self::new_polygon(
