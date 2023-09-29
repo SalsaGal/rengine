@@ -79,7 +79,7 @@ impl Sprite {
                     contents: bytemuck::cast_slice(
                         &transforms.iter().map(Mat4::from).collect::<Vec<_>>(),
                     ),
-                    usage: wgpu::BufferUsages::VERTEX,
+                    usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
                 },
             ),
             transform_count: transforms.len() as u32,
