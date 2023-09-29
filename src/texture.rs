@@ -63,6 +63,11 @@ impl<'a> TextureManager<'a> {
             .clone()
     }
 
+    pub fn clear(&mut self) {
+        self.textures
+            .retain(|_, texture| Arc::strong_count(texture) != 0);
+    }
+
     #[must_use]
     pub fn linear_sampler(&mut self) -> &wgpu::Sampler {
         self.linear_sampler.get_or_insert_with(|| {
