@@ -340,6 +340,7 @@ impl TextureVertex {
 
 impl Vertex for TextureVertex {}
 
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Rect {
     pub pos: Vec2,
     pub size: Vec2,
