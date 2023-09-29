@@ -48,10 +48,10 @@ impl Game for Chess {
             .load(texture::TextureSource::Memory(include_bytes!(
                 "ChessPiecesArray.png"
             )));
-        let sampler = texture::linear_sampler();
+        let sampler = data.texture_manager.linear_sampler();
         data.renderer.sprites.insert(Sprite::new_quad_texture(
             &pieces,
-            &sampler,
+            sampler,
             Some(Rect {
                 pos: vec2(0.5, 0.0),
                 size: vec2(1.0 / 6.0, 0.5),

@@ -16,6 +16,8 @@ pub enum TextureSource<'a> {
 #[derive(Debug, Default)]
 pub struct TextureManager<'a> {
     textures: FxHashMap<TextureSource<'a>, Arc<TextureView>>,
+    linear_sampler: Option<wgpu::Sampler>,
+    nearest_sampler: Option<wgpu::Sampler>,
 }
 
 impl<'a> TextureManager<'a> {
@@ -58,24 +60,28 @@ impl<'a> TextureManager<'a> {
             })
             .clone()
     }
-}
 
-#[must_use]
-pub fn linear_sampler() -> wgpu::Sampler {
-    RendererGlobals::get()
-        .device
-        .create_sampler(&wgpu::SamplerDescriptor {
-            mag_filter: wgpu::FilterMode::Linear,
-            ..Default::default()
+    #[must_use]
+    pub fn linear_sampler(&mut self) -> &wgpu::Sampler {
+        self.linear_sampler.get_or_insert_with(|| {
+            RendererGlobals::get()
+                .device
+                .create_sampler(&wgpu::SamplerDescriptor {
+                    mag_filter: wgpu::FilterMode::Linear,
+                    ..Default::default()
+                })
         })
-}
+    }
 
-#[must_use]
-pub fn nearest_sampler() -> wgpu::Sampler {
-    RendererGlobals::get()
-        .device
-        .create_sampler(&wgpu::SamplerDescriptor {
-            mag_filter: wgpu::FilterMode::Nearest,
-            ..Default::default()
+    #[must_use]
+    pub fn nearest_sampler(&mut self) -> &wgpu::Sampler {
+        self.nearest_sampler.get_or_insert_with(|| {
+            RendererGlobals::get()
+                .device
+                .create_sampler(&wgpu::SamplerDescriptor {
+                    mag_filter: wgpu::FilterMode::Nearest,
+                    ..Default::default()
+                })
         })
+    }
 }

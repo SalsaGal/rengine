@@ -1,10 +1,6 @@
 use glam::Vec3;
 use rengine::{
-    renderer::Projection,
-    sprite::Sprite,
-    texture::{self, TextureSource},
-    transform::Transform,
-    Game,
+    renderer::Projection, sprite::Sprite, texture::TextureSource, transform::Transform, Game,
 };
 
 fn main() {
@@ -22,7 +18,7 @@ impl Game for Main {
             &data
                 .texture_manager
                 .load(TextureSource::Memory(include_bytes!("test.png"))),
-            &texture::linear_sampler(),
+            data.texture_manager.linear_sampler(),
             None,
             vec![
                 Transform::translation(Vec3::NEG_X),
