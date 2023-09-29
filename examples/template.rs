@@ -24,7 +24,7 @@ impl Game for Main {
                 .load(TextureSource::Memory(include_bytes!("test.png"))),
             &texture::linear_sampler(),
             None,
-            &[
+            vec![
                 Transform::translation(Vec3::NEG_X),
                 Transform::translation(Vec3::X),
             ],

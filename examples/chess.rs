@@ -33,7 +33,7 @@ impl Game for Chess {
                 } else {
                     Color::WHITE
                 },
-                &[Transform::translation(vec3(
+                vec![Transform::translation(vec3(
                     x as f32 - 3.5,
                     y as f32 - 3.5,
                     -1.0,
@@ -56,7 +56,7 @@ impl Game for Chess {
                 pos: vec2(0.5, 0.0),
                 size: vec2(1.0 / 6.0, 0.5),
             }),
-            &[Transform::default()],
+            vec![Transform::default()],
         ));
     }
 

@@ -237,7 +237,15 @@ impl Renderer {
             });
 
             render_pass.set_bind_group(0, &self.projection_bind_group, &[]);
-            for (_, model) in &self.sprites {
+            for (_, model) in &mut self.sprites {
+                model.transforms.clean(|t| {
+                    RendererGlobals::get().queue.write_buffer(
+                        &model.transform_buffer,
+                        0,
+                        bytemuck::cast_slice(&t.iter().map(Mat4::from).collect::<Vec<_>>()),
+                    )
+                });
+
                 match &model.ty {
                     SpriteType::Color => render_pass.set_pipeline(&self.color_pipeline),
                     SpriteType::Texture(texture) => {

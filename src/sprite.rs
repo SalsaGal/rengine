@@ -1,5 +1,6 @@
 use std::mem::size_of;
 
+use dirtytype::Dirty;
 use wgpu::{
     include_wgsl,
     util::{BufferInitDescriptor, DeviceExt},
@@ -22,6 +23,7 @@ pub struct Sprite {
     pub(crate) index_buffer: wgpu::Buffer,
     pub(crate) index_count: u32,
     pub(crate) ty: SpriteType,
+    pub transforms: Dirty<Vec<Transform>>,
     pub(crate) transform_buffer: wgpu::Buffer,
     pub(crate) transform_count: u32,
 }
@@ -32,7 +34,7 @@ impl Sprite {
         vertices: &[impl Vertex],
         indices: &[u16],
         texture: Option<(&wgpu::TextureView, &wgpu::Sampler)>,
-        transforms: &[Transform],
+        transforms: Vec<Transform>,
     ) -> Self {
         Self {
             vertex_buffer: RendererGlobals::get().device.create_buffer_init(
@@ -81,11 +83,12 @@ impl Sprite {
                 },
             ),
             transform_count: transforms.len() as u32,
+            transforms: Dirty::new(transforms),
         }
     }
 
     #[must_use]
-    pub fn new_quad_color(color: Color, transforms: &[Transform]) -> Self {
+    pub fn new_quad_color(color: Color, transforms: Vec<Transform>) -> Self {
         let color = [color.r, color.g, color.b, color.a].map(|x| x as f32);
 
         Self::new_polygon(
@@ -118,7 +121,7 @@ impl Sprite {
         view: &wgpu::TextureView,
         sampler: &wgpu::Sampler,
         source: Option<Rect>,
-        transform: &[Transform],
+        transform: Vec<Transform>,
     ) -> Self {
         let source = source.unwrap_or_default();
 
