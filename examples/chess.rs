@@ -45,7 +45,7 @@ impl Game for Chess {
 
         let pieces = data
             .texture_manager
-            .load(texture::TextureSource::Memory(include_bytes!(
+            .load(&texture::TextureSource::Memory(include_bytes!(
                 "ChessPiecesArray.png"
             )));
         let sampler = data.texture_manager.linear_sampler();

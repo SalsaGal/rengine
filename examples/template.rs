@@ -17,7 +17,7 @@ impl Game for Main {
         data.renderer.sprites.insert(Sprite::new_quad_texture(
             &data
                 .texture_manager
-                .load(TextureSource::Memory(include_bytes!("test.png"))),
+                .load(&TextureSource::Memory(include_bytes!("test.png"))),
             data.texture_manager.linear_sampler(),
             None,
             vec![

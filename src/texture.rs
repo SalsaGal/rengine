@@ -1,4 +1,4 @@
-use std::{path::Path, sync::Arc};
+use std::{borrow::Cow, path::Path, sync::Arc};
 
 use fxhash::FxHashMap;
 use image::RgbaImage;
@@ -21,15 +21,17 @@ pub struct TextureManager<'a> {
 }
 
 impl<'a> TextureManager<'a> {
-    pub fn load(&mut self, source: TextureSource<'a>) -> Arc<TextureView> {
+    pub fn load(&mut self, source: &TextureSource<'a>) -> Arc<TextureView> {
         self.textures
             .entry(source.clone()) // TODO cloning can't be good here
             .or_insert_with(|| {
                 let image = match source {
-                    TextureSource::Path(path) => image::open(path).unwrap().into_rgba8(),
-                    TextureSource::Image(image) => image,
+                    TextureSource::Path(path) => {
+                        Cow::Owned(image::open(path).unwrap().into_rgba8())
+                    }
+                    TextureSource::Image(image) => Cow::Borrowed(image),
                     TextureSource::Memory(bytes) => {
-                        image::load_from_memory(bytes).unwrap().into_rgba8()
+                        Cow::Owned(image::load_from_memory(bytes).unwrap().into_rgba8())
                     }
                 };
 
