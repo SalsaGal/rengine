@@ -7,6 +7,7 @@ pub mod transform;
 
 use std::time::{Duration, Instant};
 
+use glam::{uvec2, UVec2};
 use input::Input;
 use renderer::Renderer;
 use texture::TextureManager;
@@ -68,9 +69,16 @@ pub fn run(mut game: impl Game + 'static) -> ! {
             WindowEvent::MouseInput { state, button, .. } => {
                 data.input.handle_button(button, state);
             }
-            WindowEvent::Resized(size) => data.renderer.resize(size),
+            WindowEvent::Resized(size) => {
+                data.renderer.resize(size);
+                game.resized(&mut data, uvec2(size.width, size.height));
+            }
             WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
                 data.renderer.resize(*new_inner_size);
+                game.resized(
+                    &mut data,
+                    uvec2(new_inner_size.width, new_inner_size.height),
+                );
             }
             _ => {}
         },
@@ -108,4 +116,5 @@ pub trait Game {
     fn init(&mut self, data: &mut GameData) {}
     /// Called every frame.
     fn update(&mut self, data: &mut GameData) {}
+    fn resized(&mut self, data: &mut GameData, pos: UVec2) {}
 }
