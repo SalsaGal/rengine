@@ -2,6 +2,7 @@ pub mod camera;
 pub mod input;
 pub mod renderer;
 pub mod sprite;
+pub mod text;
 pub mod texture;
 pub mod transform;
 
@@ -10,6 +11,7 @@ use std::time::{Duration, Instant};
 use glam::{uvec2, UVec2};
 use input::Input;
 use renderer::Renderer;
+use text::TextManager;
 use texture::TextureManager;
 use winit::{
     event::{Event, WindowEvent},
@@ -30,6 +32,7 @@ pub fn run(mut game: impl Game + 'static) -> ! {
             renderer::Projection::FixedWidth(2.0),
         )),
         texture_manager: TextureManager::default(),
+        text_manager: TextManager::new(),
         exit_code: None,
         delta_time: Duration::default(),
         start_time: Instant::now(),
@@ -93,6 +96,7 @@ pub struct GameData<'a> {
     /// A manager to handle drawing graphics.
     pub renderer: Renderer,
     pub texture_manager: TextureManager<'a>,
+    pub text_manager: TextManager,
     /// If `None` does nothing, but if set to `Some` then the program will exit, returning the `i32`.
     pub exit_code: Option<i32>,
     /// The time since the last update.
