@@ -38,10 +38,18 @@ impl TextManager {
     #[must_use]
     pub fn make_image(
         &self,
-        layout: &Layout,
+        contents: &[TextStyle],
         color: wgpu::Color,
         min_size: Option<UVec2>,
     ) -> Option<RgbaImage> {
+        let mut layout = Layout::new(CoordinateSystem::PositiveYUp);
+        for style in contents {
+            layout.append(
+                &self.fonts.iter().map(|(_, f)| f).collect::<Vec<_>>(),
+                style,
+            );
+        }
+
         let min_size = min_size.unwrap_or(UVec2::ZERO);
         let mut pixels = FxHashMap::default();
         let mut max_x = 0;
