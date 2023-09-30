@@ -9,7 +9,7 @@ use wgpu::{
 pub use glam::*;
 pub use wgpu::Color;
 
-use crate::{renderer::RendererGlobals, transform::Transform};
+use crate::{renderer::RendererGlobals, texture::Texture, transform::Transform};
 
 pub enum SpriteType {
     Color,
@@ -118,7 +118,7 @@ impl Sprite {
 
     #[must_use]
     pub fn new_quad_texture(
-        view: &wgpu::TextureView,
+        texture: &Texture,
         sampler: &wgpu::Sampler,
         source: Option<Rect>,
         transform: Vec<Transform>,
@@ -145,7 +145,7 @@ impl Sprite {
                 },
             ],
             &[0, 1, 2, 0, 2, 3],
-            Some((view, sampler)),
+            Some((&texture.view, sampler)),
             transform,
         )
     }
