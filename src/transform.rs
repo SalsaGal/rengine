@@ -70,6 +70,11 @@ impl Transform {
         }
     }
 
+    #[must_use]
+    pub fn with(self, f: impl Fn(Self) -> Self) -> Self {
+        f(self)
+    }
+
     pub(crate) fn desc<'a>() -> wgpu::VertexBufferLayout<'a> {
         wgpu::VertexBufferLayout {
             array_stride: size_of::<Mat4>() as u64,
