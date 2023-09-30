@@ -88,7 +88,7 @@ impl Sprite {
     }
 
     #[must_use]
-    pub fn new_quad_color(color: Color, transforms: Vec<Transform>) -> Self {
+    pub fn new_color(color: Color, transforms: Vec<Transform>) -> Self {
         let color = [color.r, color.g, color.b, color.a].map(|x| x as f32);
 
         Self::new_polygon(
@@ -117,7 +117,7 @@ impl Sprite {
     }
 
     #[must_use]
-    pub fn new_quad_texture(
+    pub fn new_texture(
         texture: &Texture,
         sampler: &wgpu::Sampler,
         source: Option<Rect>,

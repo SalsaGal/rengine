@@ -14,7 +14,7 @@ impl Game for Main {
         *data.renderer.projection = Projection::FixedHeight(2.0);
         data.renderer.window.set_title("Rengine Template");
 
-        data.renderer.sprites.insert(Sprite::new_quad_texture(
+        data.renderer.sprites.insert(Sprite::new_texture(
             &data
                 .texture_manager
                 .load(&TextureSource::Memory(include_bytes!("test.png"))),

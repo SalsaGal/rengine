@@ -27,7 +27,7 @@ impl Game for Chess {
         for sprite in (0..64).map(|index| {
             let x = index % 8;
             let y = index / 8;
-            Sprite::new_quad_color(
+            Sprite::new_color(
                 if (x + y) % 2 == 0 {
                     Color::BLACK
                 } else {
@@ -49,7 +49,7 @@ impl Game for Chess {
                 "ChessPiecesArray.png"
             )));
         let sampler = data.texture_manager.linear_sampler();
-        data.renderer.sprites.insert(Sprite::new_quad_texture(
+        data.renderer.sprites.insert(Sprite::new_texture(
             &pieces,
             sampler,
             Some(Rect {
