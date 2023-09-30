@@ -71,8 +71,9 @@ impl Transform {
     }
 
     #[must_use]
-    pub fn with(self, f: impl Fn(Self) -> Self) -> Self {
-        f(self)
+    pub fn and_then(mut self, f: impl Fn(&mut Self)) -> Self {
+        f(&mut self);
+        self
     }
 
     pub(crate) fn desc<'a>() -> wgpu::VertexBufferLayout<'a> {
