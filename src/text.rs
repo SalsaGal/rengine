@@ -3,7 +3,8 @@
 use std::{fs::File, io::Read, path::Path};
 
 use anyhow::{anyhow, Result};
-use fontdue::{layout::Layout, Font, FontSettings};
+pub use fontdue::layout::*;
+use fontdue::{Font, FontSettings};
 use fxhash::FxHashMap;
 use glam::UVec2;
 use image::RgbaImage;
