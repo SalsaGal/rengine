@@ -2,6 +2,8 @@ use std::mem::size_of;
 
 use glam::{Mat4, Quat, Vec3};
 
+use crate::texture::Texture;
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Transform {
     pub translation: Vec3,
@@ -35,6 +37,14 @@ impl Transform {
     }
 
     #[must_use]
+    pub fn texture_scale(texture: &Texture) -> Self {
+        Self {
+            scale: texture.size.as_vec2().extend(1.0),
+            ..Default::default()
+        }
+    }
+
+    #[must_use]
     pub fn with_translation(self, translation: Vec3) -> Self {
         Self {
             translation,
@@ -50,6 +60,14 @@ impl Transform {
     #[must_use]
     pub fn with_scale(self, scale: Vec3) -> Self {
         Self { scale, ..self }
+    }
+
+    #[must_use]
+    pub fn with_texture_scale(self, texture: &Texture) -> Self {
+        Self {
+            scale: texture.size.as_vec2().extend(1.0),
+            ..self
+        }
     }
 
     pub(crate) fn desc<'a>() -> wgpu::VertexBufferLayout<'a> {
