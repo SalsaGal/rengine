@@ -6,7 +6,6 @@ use anyhow::{anyhow, Result};
 pub use fontdue::layout::*;
 use fontdue::{Font, FontSettings};
 use fxhash::FxHashMap;
-use glam::UVec2;
 use image::RgbaImage;
 use slab::Slab;
 
@@ -36,13 +35,8 @@ impl TextManager {
 
     /// Render text to an image.
     #[must_use]
-    pub fn make_image(
-        &self,
-        contents: &[TextStyle],
-        color: wgpu::Color,
-        min_size: Option<UVec2>,
-    ) -> Option<RgbaImage> {
-        let mut layout = Layout::new(CoordinateSystem::PositiveYUp);
+    pub fn make_image(&self, contents: &[TextStyle], color: wgpu::Color) -> Option<RgbaImage> {
+        let mut layout = Layout::new(CoordinateSystem::PositiveYDown);
         for style in contents {
             layout.append(
                 &self.fonts.iter().map(|(_, f)| f).collect::<Vec<_>>(),
@@ -50,7 +44,6 @@ impl TextManager {
             );
         }
 
-        let min_size = min_size.unwrap_or(UVec2::ZERO);
         let mut pixels = FxHashMap::default();
         let mut max_x = 0;
         let mut max_y = 0;
@@ -71,7 +64,7 @@ impl TextManager {
 
         // Add 2 instead of one for padding so that linear interpolation doesn't cause artifacts at
         // the top of the texture
-        let mut image = RgbaImage::new(min_size.x.max(max_x) + 1, min_size.y.max(max_y) + 1);
+        let mut image = RgbaImage::new(max_x + 1, max_y + 1);
         let color = [
             (color.r * 255.0) as u8,
             (color.g * 255.0) as u8,
