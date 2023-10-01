@@ -107,6 +107,14 @@ impl Sprite {
         )
     }
 
+    pub fn set_vertices(&mut self, vertices: &[impl Vertex]) {
+        RendererGlobals::get().queue.write_buffer(
+            &self.vertex_buffer,
+            0,
+            bytemuck::cast_slice(vertices),
+        );
+    }
+
     pub(crate) fn color_pipeline(
         projection_layout: &wgpu::BindGroupLayout,
     ) -> wgpu::RenderPipeline {
