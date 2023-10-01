@@ -92,25 +92,8 @@ impl Sprite {
         let color = [color.r, color.g, color.b, color.a].map(|x| x as f32);
 
         Self::new_polygon(
-            &[
-                ColorVertex {
-                    pos: vec3(-0.5, -0.5, 0.0),
-                    color,
-                },
-                ColorVertex {
-                    pos: vec3(0.5, -0.5, 0.0),
-                    color,
-                },
-                ColorVertex {
-                    pos: vec3(0.5, 0.5, 0.0),
-                    color,
-                },
-                ColorVertex {
-                    pos: vec3(-0.5, 0.5, 0.0),
-                    color,
-                },
-            ],
-            &[0, 1, 2, 0, 2, 3],
+            &Self::QUAD.map(|pos| ColorVertex { pos, color }),
+            &Self::INDICES,
             None,
             transforms,
         )
@@ -126,25 +109,20 @@ impl Sprite {
         let source = source.unwrap_or_default();
 
         Self::new_polygon(
-            &[
-                TextureVertex {
-                    pos: vec3(-0.5, -0.5, 0.0),
-                    tex_coords: source.pos + vec2(0.0, source.size.y),
-                },
-                TextureVertex {
-                    pos: vec3(0.5, -0.5, 0.0),
-                    tex_coords: source.pos + source.size,
-                },
-                TextureVertex {
-                    pos: vec3(0.5, 0.5, 0.0),
-                    tex_coords: source.pos + vec2(source.size.x, 0.0),
-                },
-                TextureVertex {
-                    pos: vec3(-0.5, 0.5, 0.0),
-                    tex_coords: source.pos,
-                },
-            ],
-            &[0, 1, 2, 0, 2, 3],
+            &Self::QUAD
+                .into_iter()
+                .zip([
+                    vec2(0.0, source.size.y),
+                    source.size,
+                    vec2(source.size.x, 0.0),
+                    Vec2::ZERO,
+                ])
+                .map(|(pos, tex_coords)| TextureVertex {
+                    pos,
+                    tex_coords: tex_coords + source.pos,
+                })
+                .collect::<Vec<_>>(),
+            &Self::INDICES,
             Some((&texture.view, sampler)),
             transform,
         )
@@ -279,6 +257,14 @@ impl Sprite {
                 ],
             })
     }
+
+    pub const QUAD: [Vec3; 4] = [
+        vec3(-0.5, -0.5, 0.0),
+        vec3(0.5, -0.5, 0.0),
+        vec3(0.5, 0.5, 0.0),
+        vec3(-0.5, 0.5, 0.0),
+    ];
+    pub const INDICES: [u16; 6] = [0, 1, 2, 0, 2, 3];
 }
 
 #[repr(C)]
