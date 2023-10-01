@@ -89,14 +89,7 @@ impl Sprite {
 
     #[must_use]
     pub fn new_color(color: Color, transforms: Vec<Transform>) -> Self {
-        let color = [color.r, color.g, color.b, color.a].map(|x| x as f32);
-
-        Self::new_polygon(
-            &Self::QUAD.map(|pos| ColorVertex { pos, color }),
-            &Self::INDICES,
-            None,
-            transforms,
-        )
+        Self::new_polygon(&ColorVertex::quad(color), &Self::INDICES, None, transforms)
     }
 
     #[must_use]
@@ -106,22 +99,8 @@ impl Sprite {
         source: Option<Rect>,
         transform: Vec<Transform>,
     ) -> Self {
-        let source = source.unwrap_or_default();
-
         Self::new_polygon(
-            &Self::QUAD
-                .into_iter()
-                .zip([
-                    vec2(0.0, source.size.y),
-                    source.size,
-                    vec2(source.size.x, 0.0),
-                    Vec2::ZERO,
-                ])
-                .map(|(pos, tex_coords)| TextureVertex {
-                    pos,
-                    tex_coords: tex_coords + source.pos,
-                })
-                .collect::<Vec<_>>(),
+            &TextureVertex::quad(source),
             &Self::INDICES,
             Some((&texture.view, sampler)),
             transform,
@@ -275,6 +254,11 @@ pub struct ColorVertex {
 }
 
 impl ColorVertex {
+    pub fn quad(color: Color) -> [Self; 4] {
+        let color = [color.r, color.g, color.b, color.a].map(|x| x as f32);
+        Sprite::QUAD.map(|pos| ColorVertex { pos, color })
+    }
+
     pub(crate) fn desc<'a>() -> wgpu::VertexBufferLayout<'a> {
         wgpu::VertexBufferLayout {
             array_stride: size_of::<Self>() as u64,
@@ -305,6 +289,21 @@ pub struct TextureVertex {
 }
 
 impl TextureVertex {
+    pub fn quad(source: Option<Rect>) -> [Self; 4] {
+        let source = source.unwrap_or_default();
+        let mut tex_coords = [
+            vec2(0.0, source.size.y),
+            source.size,
+            vec2(source.size.x, 0.0),
+            Vec2::ZERO,
+        ]
+        .into_iter();
+        Sprite::QUAD.map(|pos| TextureVertex {
+            pos,
+            tex_coords: tex_coords.next().unwrap(),
+        })
+    }
+
     pub(crate) fn desc<'a>() -> wgpu::VertexBufferLayout<'a> {
         wgpu::VertexBufferLayout {
             array_stride: size_of::<Self>() as u64,
