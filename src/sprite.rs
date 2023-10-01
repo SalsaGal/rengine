@@ -41,7 +41,7 @@ impl Sprite {
                 &BufferInitDescriptor {
                     label: None,
                     contents: bytemuck::cast_slice(vertices),
-                    usage: wgpu::BufferUsages::VERTEX,
+                    usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
                 },
             ),
             index_buffer: RendererGlobals::get()
