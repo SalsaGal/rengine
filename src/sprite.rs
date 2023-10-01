@@ -201,6 +201,7 @@ impl Sprite {
             multiview: None,
         })
     }
+
     pub(crate) fn texture_pipeline(
         projection_layout: &wgpu::BindGroupLayout,
     ) -> wgpu::RenderPipeline {
