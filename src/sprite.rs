@@ -308,7 +308,7 @@ impl TextureVertex {
         .into_iter();
         Sprite::QUAD.map(|pos| TextureVertex {
             pos,
-            tex_coords: tex_coords.next().unwrap(),
+            tex_coords: source.pos + tex_coords.next().unwrap(),
         })
     }
 
