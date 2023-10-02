@@ -87,10 +87,7 @@ impl Renderer {
                 .device
                 .create_buffer_init(&BufferInitDescriptor {
                     label: None,
-                    contents: bytemuck::cast_slice(&[Self::projection_to_mat4(
-                        projection,
-                        window.inner_size(),
-                    )]),
+                    contents: bytemuck::cast_slice(&[projection.as_mat4(window.inner_size())]),
                     usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::UNIFORM,
                 });
         let camera_buffer =
@@ -175,10 +172,7 @@ impl Renderer {
         RendererGlobals::get().queue.write_buffer(
             &self.projection_buffer,
             0,
-            bytemuck::cast_slice(&[Self::projection_to_mat4(
-                *self.projection,
-                self.window.inner_size(),
-            )]),
+            bytemuck::cast_slice(&[self.projection.as_mat4(self.window.inner_size())]),
         );
         self.depth_view = Self::make_depth_texture(size);
         self.surface
@@ -199,10 +193,7 @@ impl Renderer {
             RendererGlobals::get().queue.write_buffer(
                 &self.projection_buffer,
                 0,
-                bytemuck::cast_slice(&[Self::projection_to_mat4(
-                    *self.projection,
-                    self.window.inner_size(),
-                )]),
+                bytemuck::cast_slice(&[self.projection.as_mat4(self.window.inner_size())]),
             );
             self.projection.dirty = false;
         }
@@ -269,43 +260,6 @@ impl Renderer {
         Ok(())
     }
 
-    fn projection_to_mat4(projection: Projection, size: PhysicalSize<u32>) -> Mat4 {
-        let window_size = vec2(size.width as f32, size.height as f32);
-        match projection {
-            Projection::Absolute(width, height) => Mat4::orthographic_rh(
-                -width / 2.0,
-                width / 2.0,
-                -height / 2.0,
-                height / 2.0,
-                -10.0,
-                10.0,
-            ),
-            Projection::FixedWidth(width) => Mat4::orthographic_rh(
-                -width / 2.0,
-                width / 2.0,
-                -width * (window_size.y / window_size.x) / 2.0,
-                width * (window_size.y / window_size.x) / 2.0,
-                -10.0,
-                10.0,
-            ),
-            Projection::FixedHeight(height) => Mat4::orthographic_rh(
-                -height * (window_size.x / window_size.y) / 2.0,
-                height * (window_size.x / window_size.y) / 2.0,
-                -height / 2.0,
-                height / 2.0,
-                -10.0,
-                10.0,
-            ),
-            Projection::FixedMinimum(width, height) => {
-                if window_size.x > window_size.y {
-                    Self::projection_to_mat4(Projection::FixedHeight(height), size)
-                } else {
-                    Self::projection_to_mat4(Projection::FixedWidth(width), size)
-                }
-            }
-        }
-    }
-
     fn make_depth_texture(size: PhysicalSize<u32>) -> wgpu::TextureView {
         RendererGlobals::get()
             .device
@@ -333,6 +287,45 @@ pub enum Projection {
     FixedWidth(f32),
     FixedHeight(f32),
     FixedMinimum(f32, f32),
+}
+
+impl Projection {
+    pub fn as_mat4(self, screen_size: PhysicalSize<u32>) -> Mat4 {
+        let window_size = vec2(screen_size.width as f32, screen_size.height as f32);
+        match self {
+            Projection::Absolute(width, height) => Mat4::orthographic_rh(
+                -width / 2.0,
+                width / 2.0,
+                -height / 2.0,
+                height / 2.0,
+                -10.0,
+                10.0,
+            ),
+            Projection::FixedWidth(width) => Mat4::orthographic_rh(
+                -width / 2.0,
+                width / 2.0,
+                -width * (window_size.y / window_size.x) / 2.0,
+                width * (window_size.y / window_size.x) / 2.0,
+                -10.0,
+                10.0,
+            ),
+            Projection::FixedHeight(height) => Mat4::orthographic_rh(
+                -height * (window_size.x / window_size.y) / 2.0,
+                height * (window_size.x / window_size.y) / 2.0,
+                -height / 2.0,
+                height / 2.0,
+                -10.0,
+                10.0,
+            ),
+            Projection::FixedMinimum(width, height) => {
+                if window_size.x > window_size.y {
+                    Self::as_mat4(Projection::FixedHeight(height), screen_size)
+                } else {
+                    Self::as_mat4(Projection::FixedWidth(width), screen_size)
+                }
+            }
+        }
+    }
 }
 
 impl Default for Projection {
