@@ -340,6 +340,15 @@ pub struct Rect {
     pub size: Vec2,
 }
 
+impl Rect {
+    pub fn overlaps(&self, other: &Self) -> bool {
+        self.pos.x < other.pos.x + other.size.x
+            && self.pos.x + self.size.x > other.pos.x
+            && self.pos.y < other.pos.y + other.size.y
+            && self.pos.y + self.size.y > other.pos.y
+    }
+}
+
 impl Default for Rect {
     fn default() -> Self {
         Self {
