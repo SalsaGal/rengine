@@ -225,6 +225,7 @@ impl From<Key> for ScanCode {
             Key::Char('b') => 48,
             Key::Char('n') => 49,
             Key::Char('m') => 50,
+            Key::Char(',') => 51,
             Key::Char(' ') | Key::Space => 57,
             Key::Fn(num) => match num {
                 1..=10 => u32::from(num) + 58,
@@ -281,6 +282,7 @@ impl From<Key> for ScanCode {
             Key::Char('l') => 37,
             Key::Char('j') => 38,
             Key::Char('k') => 40,
+            Key::Char(',') => 43,
             Key::Char('n') => 45,
             Key::Char('m') => 46,
             Key::Tab | Key::Char('\t') => 48,
@@ -357,6 +359,7 @@ impl From<Key> for ScanCode {
             Key::Char('b') => 48,
             Key::Char('n') => 49,
             Key::Char('m') => 50,
+            Key::Char(',') => 0x33,
             Key::Char(' ') | Key::Space => 0x39,
             Key::Up => 0x48,
             Key::Left => 0x4b,
