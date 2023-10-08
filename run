@@ -1,5 +1,5 @@
 [default]
-cargo run --example text
+cargo run --example chess
 
 [default:build]
 cargo build

@@ -36,6 +36,7 @@ pub fn run(mut game: impl Game + 'static) -> ! {
         exit_code: None,
         delta_time: Duration::default(),
         start_time: Instant::now(),
+        frame_length: Duration::from_secs_f32(1.0 / 60.0),
     };
 
     game.init(&mut data);
@@ -43,14 +44,16 @@ pub fn run(mut game: impl Game + 'static) -> ! {
     let mut last_update = Instant::now();
     event_loop.run(move |event, _, control_flow| match event {
         Event::MainEventsCleared => {
-            data.delta_time = Instant::now().duration_since(last_update);
-            game.update(&mut data);
-            if let Some(code) = data.exit_code {
-                *control_flow = ControlFlow::ExitWithCode(code);
+            if last_update.elapsed() >= data.frame_length {
+                data.delta_time = Instant::now().duration_since(last_update);
+                game.update(&mut data);
+                if let Some(code) = data.exit_code {
+                    *control_flow = ControlFlow::ExitWithCode(code);
+                }
+                data.input.update();
+                last_update = Instant::now();
+                data.renderer.window.request_redraw();
             }
-            data.input.update();
-            data.renderer.window.request_redraw();
-            last_update = Instant::now();
         }
         Event::RedrawRequested(..) => match data.renderer.render() {
             Err(wgpu::SurfaceError::Lost) => {
@@ -103,6 +106,8 @@ pub struct GameData<'a> {
     pub delta_time: Duration,
     /// The time that the game began running.
     pub start_time: Instant,
+    /// The minimal time duration between each game update.
+    pub frame_length: Duration,
 }
 
 impl GameData<'_> {
