@@ -23,6 +23,7 @@ pub struct Sprite {
     pub(crate) index_buffer: wgpu::Buffer,
     pub(crate) index_count: u32,
     pub(crate) ty: SpriteType,
+    pub visible: bool,
     pub transforms: Dirty<Vec<Transform>>,
     pub(crate) transform_buffer: wgpu::Buffer,
     pub(crate) transform_count: u32,
@@ -83,6 +84,7 @@ impl Sprite {
                 },
             ),
             transform_count: transforms.len() as u32,
+            visible: true,
             transforms: Dirty::new(transforms),
         }
     }
@@ -105,6 +107,10 @@ impl Sprite {
             Some((&texture.view, sampler)),
             transform,
         )
+    }
+
+    pub fn with_visibility(self, visible: bool) -> Self {
+        Self { visible, ..self }
     }
 
     pub fn set_vertices(&mut self, vertices: &[impl Vertex]) {

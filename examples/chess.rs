@@ -9,10 +9,13 @@ use rengine::{
 };
 
 fn main() {
-    rengine::run(Chess);
+    rengine::run(Chess::default());
 }
 
-struct Chess;
+#[derive(Default)]
+struct Chess {
+    piece: usize,
+}
 
 impl Game for Chess {
     fn init(&mut self, data: &mut rengine::GameData) {
@@ -49,7 +52,7 @@ impl Game for Chess {
                 "ChessPiecesArray.png"
             )));
         let sampler = data.texture_manager.linear_sampler();
-        data.renderer.sprites.insert(Sprite::new_texture(
+        self.piece = data.renderer.sprites.insert(Sprite::new_texture(
             &pieces,
             sampler,
             Some(Rect {
@@ -61,6 +64,7 @@ impl Game for Chess {
     }
 
     fn update(&mut self, data: &mut rengine::GameData) {
+        data.renderer.sprites[self.piece].visible = data.input.is_key(' ', InputState::Up);
         if data.input.is_key('q', InputState::Pressed) {
             data.exit();
         }

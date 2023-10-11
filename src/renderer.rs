@@ -228,7 +228,7 @@ impl Renderer {
             });
 
             render_pass.set_bind_group(0, &self.projection_bind_group, &[]);
-            for (_, model) in &mut self.sprites {
+            for (_, model) in self.sprites.iter_mut().filter(|(_, sprite)| sprite.visible) {
                 model.transforms.clean(|t| {
                     RendererGlobals::get().queue.write_buffer(
                         &model.transform_buffer,
