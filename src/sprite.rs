@@ -349,9 +349,9 @@ pub struct Rect {
 impl Rect {
     pub fn contains(&self, point: Vec2) -> bool {
         point.x >= self.pos.x
-            && point.x <= self.pos.x + self.size.x
+            && point.x < self.pos.x + self.size.x
             && point.y >= self.pos.y
-            && point.y <= self.pos.y + self.size.y
+            && point.y < self.pos.y + self.size.y
     }
 
     pub fn overlaps(&self, other: &Self) -> bool {
