@@ -347,12 +347,36 @@ pub struct Rect {
 }
 
 impl Rect {
+    pub fn contains(&self, point: Vec2) -> bool {
+        point.x >= self.pos.x
+            && point.x <= self.pos.x + self.size.x
+            && point.y >= self.pos.y
+            && point.y <= self.pos.y + self.size.y
+    }
+
     pub fn overlaps(&self, other: &Self) -> bool {
         self.pos.x < other.pos.x + other.size.x
             && self.pos.x + self.size.x > other.pos.x
             && self.pos.y < other.pos.y + other.size.y
             && self.pos.y + self.size.y > other.pos.y
     }
+}
+
+#[test]
+fn rect_test() {
+    assert!(Rect {
+        pos: vec2(1.0, 1.0),
+        size: vec2(2.0, 2.0)
+    }
+    .contains(vec2(1.0, 1.05)));
+    assert!(Rect {
+        pos: vec2(1.0, 1.0),
+        size: vec2(2.0, 2.0)
+    }
+    .overlaps(&Rect {
+        pos: vec2(1.0, 1.0),
+        size: vec2(2.0, 2.0)
+    }));
 }
 
 impl Default for Rect {
