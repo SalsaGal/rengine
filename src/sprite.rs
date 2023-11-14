@@ -268,7 +268,7 @@ pub struct ColorVertex {
 }
 
 impl ColorVertex {
-    pub fn quad(color: Color) -> [Self; 4] {
+    #[must_use] pub fn quad(color: Color) -> [Self; 4] {
         let color = [color.r, color.g, color.b, color.a].map(|x| x as f32);
         Sprite::QUAD.map(|pos| ColorVertex { pos, color })
     }
@@ -303,7 +303,7 @@ pub struct TextureVertex {
 }
 
 impl TextureVertex {
-    pub fn quad(source: Option<Rect>) -> [Self; 4] {
+    #[must_use] pub fn quad(source: Option<Rect>) -> [Self; 4] {
         let source = source.unwrap_or_default();
         let mut tex_coords = [
             vec2(0.0, source.size.y),
@@ -347,14 +347,14 @@ pub struct Rect {
 }
 
 impl Rect {
-    pub fn contains(&self, point: Vec2) -> bool {
+    #[must_use] pub fn contains(&self, point: Vec2) -> bool {
         point.x >= self.pos.x
             && point.x < self.pos.x + self.size.x
             && point.y >= self.pos.y
             && point.y < self.pos.y + self.size.y
     }
 
-    pub fn overlaps(&self, other: &Self) -> bool {
+    #[must_use] pub fn overlaps(&self, other: &Self) -> bool {
         self.pos.x < other.pos.x + other.size.x
             && self.pos.x + self.size.x > other.pos.x
             && self.pos.y < other.pos.y + other.size.y

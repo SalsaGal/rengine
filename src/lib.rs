@@ -61,7 +61,7 @@ pub fn run(mut game: impl Game + 'static) -> ! {
             }
             Err(wgpu::SurfaceError::OutOfMemory) => panic!("SurfaceError: Out Of Memory!"),
             Err(e) => eprintln!("SurfaceError: {e}"),
-            Ok(_) => {}
+            Ok(()) => {}
         },
         Event::WindowEvent { event, .. } => match event {
             WindowEvent::AxisMotion {

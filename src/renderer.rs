@@ -235,7 +235,7 @@ impl Renderer {
                         &model.transform_buffer,
                         0,
                         bytemuck::cast_slice(&t.iter().map(Mat4::from).collect::<Vec<_>>()),
-                    )
+                    );
                 });
 
                 match &model.ty {
@@ -291,7 +291,7 @@ pub enum Projection {
 }
 
 impl Projection {
-    pub fn as_mat4(self, screen_size: PhysicalSize<u32>) -> Mat4 {
+    #[must_use] pub fn as_mat4(self, screen_size: PhysicalSize<u32>) -> Mat4 {
         let window_size = vec2(screen_size.width as f32, screen_size.height as f32);
         match self {
             Projection::Absolute(width, height) => Mat4::orthographic_rh(
