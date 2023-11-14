@@ -98,7 +98,9 @@ pub struct GameData<'a> {
     pub input: Input,
     /// A manager to handle drawing graphics.
     pub renderer: Renderer,
+    /// Stores textures to minimise reallocation.
     pub texture_manager: TextureManager<'a>,
+    /// A manager that stores fonts and renders text into images.
     pub text_manager: TextManager,
     /// If `None` does nothing, but if set to `Some` then the program will exit, returning the `i32`.
     pub exit_code: Option<i32>,
@@ -125,5 +127,6 @@ pub trait Game {
     fn init(&mut self, data: &mut GameData) {}
     /// Called every frame.
     fn update(&mut self, data: &mut GameData) {}
+    /// Called when the window is resized.
     fn resized(&mut self, data: &mut GameData, pos: UVec2) {}
 }

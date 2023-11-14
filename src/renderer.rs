@@ -14,6 +14,7 @@ use crate::{
     sprite::{Sprite, SpriteType},
 };
 
+/// An accessor to global data types for all rendering.
 #[derive(Debug)]
 pub struct RendererGlobals {
     pub(crate) device: Device,
